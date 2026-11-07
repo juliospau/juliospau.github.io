@@ -1,9 +1,0 @@
-- tipo: dominio
-  valor: "update-checker[.]example"
-  primera_vez: 2026-10-02
-  confianza: alta
-  notas: "Cert TLS compartido con IP 2"
-- tipo: ip
-  valor: "203.0.113[.]45"
-  primera_vez: 2026-10-03
-  confianza: media

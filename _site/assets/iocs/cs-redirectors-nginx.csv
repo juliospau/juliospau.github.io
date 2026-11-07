@@ -1,0 +1,10 @@
+tipo,valor,primera_vez,confianza,notas
+ip,"172.245.42[.]176",2026-08-17,media,"Indicador inicial; redirector nginx con 302 a google.com"
+ip,"104.168.159[.]60",2026-09-05,media,"Hostwinds (Seattle); certificado Cloudflare Origin: origen detrás de Cloudflare"
+dominio,"fcakbook[.]top",2026-09-05,media,"Asociado a 104.168.159[.]60 en Shodan; nombre que imita a Facebook"
+ip,"23.254.202[.]110",2026-09-04,media,"Hostwinds; misma huella HTTP"
+ip,"51.79.207[.]53",2026-09-03,media,"OVH Singapur; reportado como servidor de Cobalt Strike en VirusTotal hace unos 2 años (watermark 391144938)"
+ip,"209.17.118[.]74",2026-09,alta,"Leaseweb Singapur; Hunt.io lo identifica como team server de Cobalt Strike"
+patrón,"302 a https://www.google.com/ + Server: nginx + Content-Length 138/154 + Referrer-Policy: no-referrer",2026-08-17,media,"Huella HTTP del redirector usada para el hunting"
+
+

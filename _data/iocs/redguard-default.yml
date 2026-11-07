@@ -1,0 +1,50 @@
+# IOCs — Redirectores RedGuard con configuración por defecto
+# IPs y dominios defangeados. Fechas = observación en Shodan, VirusTotal o ThreatFox.
+# RedGuard es una herramienta de red team de código abierto: un servidor con RedGuard
+# no es malicioso por definición. Revisa la columna de confianza y las notas.
+
+- tipo: ip
+  valor: "96.44.160[.]44"
+  primera_vez: "2026-07-26"
+  confianza: media
+  notas: "HostPapa (Los Ángeles); huella RedGuard por defecto en 80 y 443"
+- tipo: dominio
+  valor: "clairdatateam[.]com"
+  primera_vez: "2025-10-15"
+  confianza: media
+  notas: "Resolvió a 96.44.160[.]44 según DNS pasivo; 8/91 en VirusTotal"
+- tipo: dominio
+  valor: "ht.clairdatateam[.]com"
+  primera_vez: "2025-10-15"
+  confianza: baja
+  notas: "Subdominio del anterior; resolvió a 96.44.160[.]44"
+- tipo: dominio
+  valor: "csoftdatateam[.]com"
+  primera_vez: "2025-10-21"
+  confianza: baja
+  notas: "Resolvió a 96.44.160[.]44; 0/91 en VirusTotal; patrón de nombre parecido"
+- tipo: ip
+  valor: "82.156.238[.]106"
+  primera_vez: "2026-07-25"
+  confianza: media
+  notas: "Tencent Cloud (Pekín); huella RedGuard; AlphaSOC lo clasifica como malware"
+- tipo: ip
+  valor: "124.156.152[.]46"
+  primera_vez: "2025"
+  confianza: alta
+  notas: "Tencent (Hong Kong); reportado en ThreatFox como C2 con la etiqueta RedGuard"
+- tipo: ip
+  valor: "45.137.10[.]110"
+  primera_vez: "2025-10-03"
+  confianza: media
+  notas: "XNNET (Hong Kong); reportado en ThreatFox como botnet_cc (malware desconocido)"
+- tipo: serial TLS
+  valor: "1657766544761773100"
+  primera_vez: "2022-07-14"
+  confianza: alta
+  notas: "Serial del certificado por defecto (*.aliyun.com); equivale a la fecha de creación en nanosegundos"
+- tipo: hash HTML
+  valor: "http.html_hash:155817744"
+  primera_vez: "2026-07-26"
+  confianza: alta
+  notas: "Hash de Shodan del cuerpo de la redirección por defecto a https://360.net"

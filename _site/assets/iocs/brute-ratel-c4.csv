@@ -1,0 +1,11 @@
+tipo,valor,primera_vez,confianza,notas
+ip,"185.146.234[.]46",2026-07,media,"Punto de pivote inicial; sin registros actuales en Shodan el 24 de julio de 2026"
+ip,"91.84.111[.]104",2026-04,alta,"Servers Tech FZCO (Ámsterdam); ThreatFox: brute_ratel en el puerto 8443; certificado falso LOCALHOST / Microsoft"
+ip,"77.88.193[.]134",2026-05,media,"Ante Mediam LLC (Kiev); comunidad de VirusTotal: C2 de Brute Ratel; 2 ficheros detectados se comunican con la IP"
+ip,"159.89.20[.]126",2026-07-22,media,"DigitalOcean (Fráncfort); certificado con CN brute-ratel-test; puede ser un entorno de pruebas"
+ip,"46.4.195[.]61",2026-07,media,"Hetzner (Alemania); AlphaSOC lo clasifica como malware"
+dominio,"fe-2.strangled[.]net",2021-02-18,baja,"DNS pasivo histórico de 159.89.20[.]126; probablemente de un inquilino anterior de la IP"
+hash HTML,"http.html_hash:182674321",2026-07-24,media,"Hash de Shodan del cuerpo 'Page not found' (14 bytes); solo es útil junto con 200 OK"
+JARM,"3fd21b20d00000021c43d21b21b43d76e1f79b8645e08ae7fa8f07eb5e4202",2026-07-24,baja,"JARM más frecuente en el clúster (7 de 20); no es exclusivo de Brute Ratel"
+JARM,"3fd3fd20d00000021c43d43d00043d15e5079913504d6ff89229f1f99b095c",2026-07-24,baja,"Segundo JARM más frecuente (5 de 20); no es exclusivo de Brute Ratel"
+

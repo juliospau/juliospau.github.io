@@ -1,0 +1,6 @@
+---
+layout: null
+---
+tipo,valor,primera_vez,confianza,notas
+{% for i in site.data.iocs["redguard-default"] %}{{ i.tipo }},"{{ i.valor }}",{{ i.primera_vez }},{{ i.confianza }},"{{ i.notas }}"
+{% endfor %}

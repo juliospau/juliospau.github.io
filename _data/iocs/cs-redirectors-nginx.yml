@@ -1,0 +1,41 @@
+# IOCs — Redirectores nginx compatibles con infraestructura de Cobalt Strike
+# IPs y dominios defangeados. Fechas = observación en las respuestas HTTP o en Shodan.
+# Los nombres de host rDNS del proveedor (hostwindsdns.com, vps.ovh.ca) no se incluyen:
+# identifican el VPS, no al operador.
+
+- tipo: ip
+  valor: "172.245.42[.]176"
+  primera_vez: "2026-08-17"
+  confianza: media
+  notas: "Indicador inicial; redirector nginx con 302 a google.com"
+- tipo: ip
+  valor: "104.168.159[.]60"
+  primera_vez: "2026-09-05"
+  confianza: media
+  notas: "Hostwinds (Seattle); certificado Cloudflare Origin: origen detrás de Cloudflare"
+- tipo: dominio
+  valor: "fcakbook[.]top"
+  primera_vez: "2026-09-05"
+  confianza: media
+  notas: "Asociado a 104.168.159[.]60 en Shodan; nombre que imita a Facebook"
+- tipo: ip
+  valor: "23.254.202[.]110"
+  primera_vez: "2026-09-04"
+  confianza: media
+  notas: "Hostwinds; misma huella HTTP"
+- tipo: ip
+  valor: "51.79.207[.]53"
+  primera_vez: "2026-09-03"
+  confianza: media
+  notas: "OVH Singapur; reportado como servidor de Cobalt Strike en VirusTotal hace unos 2 años (watermark 391144938)"
+- tipo: ip
+  valor: "209.17.118[.]74"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Leaseweb Singapur; Hunt.io lo identifica como team server de Cobalt Strike"
+- tipo: patrón
+  valor: "302 a https://www.google.com/ + Server: nginx + Content-Length 138/154 + Referrer-Policy: no-referrer"
+  primera_vez: "2026-08-17"
+  confianza: media
+  notas: "Huella HTTP del redirector usada para el hunting"
+

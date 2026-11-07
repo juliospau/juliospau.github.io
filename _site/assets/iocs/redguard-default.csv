@@ -1,0 +1,11 @@
+tipo,valor,primera_vez,confianza,notas
+ip,"96.44.160[.]44",2026-07-26,media,"HostPapa (Los Ángeles); huella RedGuard por defecto en 80 y 443"
+dominio,"clairdatateam[.]com",2025-10-15,media,"Resolvió a 96.44.160[.]44 según DNS pasivo; 8/91 en VirusTotal"
+dominio,"ht.clairdatateam[.]com",2025-10-15,baja,"Subdominio del anterior; resolvió a 96.44.160[.]44"
+dominio,"csoftdatateam[.]com",2025-10-21,baja,"Resolvió a 96.44.160[.]44; 0/91 en VirusTotal; patrón de nombre parecido"
+ip,"82.156.238[.]106",2026-07-25,media,"Tencent Cloud (Pekín); huella RedGuard; AlphaSOC lo clasifica como malware"
+ip,"124.156.152[.]46",2025,alta,"Tencent (Hong Kong); reportado en ThreatFox como C2 con la etiqueta RedGuard"
+ip,"45.137.10[.]110",2025-10-03,media,"XNNET (Hong Kong); reportado en ThreatFox como botnet_cc (malware desconocido)"
+serial TLS,"1657766544761773100",2022-07-14,alta,"Serial del certificado por defecto (*.aliyun.com); equivale a la fecha de creación en nanosegundos"
+hash HTML,"http.html_hash:155817744",2026-07-26,alta,"Hash de Shodan del cuerpo de la redirección por defecto a https://360.net"
+
