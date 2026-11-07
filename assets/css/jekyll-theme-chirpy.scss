@@ -1,0 +1,293 @@
+---
+---
+
+@use 'abstracts/variables' with (
+  $theme: '{{ site.theme_mode }}',
+  $font-family-base: ('IBM Plex Sans', system-ui, sans-serif),
+  $font-family-heading: ('IBM Plex Mono', ui-monospace, monospace),
+  $main-content-max-width: 1320px
+);
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* ==========================================================================
+   Skin "phosphor" — Adversary's Notes
+   ========================================================================== */
+
+:root[data-bs-theme='dark'] {
+--an-bg: #0e1214;             /* fondo de la página */
+  --an-deep: #0a0d0f;           /* fondo de los bloques de código (más oscuro) */
+  --an-surface: #151b1f;        /* tarjetas, menús */
+  --an-raised: #1c2429;         /* hover, cabeceras de tarjeta */
+  --an-border: #26323b;         /* bordes y separadores */
+  --an-text: #c8cfc4;           /* texto */
+  --an-muted: #7f8c88;          /* texto secundario, fechas */
+  --an-heading: #eef2ea;        /* títulos */
+  --an-accent: #ffb547;         /* acento (hex) */
+  --an-accent-rgb: 255 181 71;  /* el mismo acento en R G B */
+  --an-accent-soft: #ffd28a;    /* acento claro (código en línea) */
+
+  /* Colores fijos (no dependen de la paleta) */
+  --an-warn: #ffb547;   /* avisos */
+  --an-red: #ff5c57;    /* peligro */
+  --an-green: #7bd88f;  /* consejos */
+  --an-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Derivados */
+  --an-accent-dim: rgb(var(--an-accent-rgb) / 35%);
+
+  /* Mapeo a las variables de Chirpy */
+  --main-bg: var(--an-bg);
+  --main-border-color: var(--an-border);
+  --text-color: var(--an-text);
+  --text-muted-color: var(--an-muted);
+  --text-muted-highlight-color: color-mix(in srgb, var(--an-text) 70%, var(--an-muted));
+  --heading-color: var(--an-heading);
+  --label-color: var(--an-muted);
+  --blockquote-border-color: var(--an-accent-dim);
+  --blockquote-text-color: color-mix(in srgb, var(--an-text) 60%, var(--an-muted));
+  --link-color: var(--an-accent);
+  --link-underline-color: var(--an-accent-dim);
+  --button-bg: var(--an-surface);
+  --btn-border-color: var(--an-border);
+  --card-bg: var(--an-surface);
+  --card-header-bg: var(--an-raised);
+  --card-hover-bg: var(--an-raised);
+  --card-shadow: 0 0 0 1px var(--an-border);
+  --menu-bg: var(--an-surface);
+  --menu-border-color: var(--an-border);
+  --sidebar-bg: var(--an-surface);
+  --sidebar-border-color: var(--an-border);
+  --sidebar-active-color: var(--an-accent);
+  --sidebar-hover-bg: var(--an-raised);
+  --site-title-color: var(--an-accent);
+  --topbar-bg: color-mix(in srgb, var(--an-bg) 90%, transparent);
+  --topbar-text-color: var(--an-text);
+  --search-border-color: var(--an-border);
+  --input-focus-border-color: var(--an-accent);
+  --toc-highlight: var(--an-accent);
+  --toc-popup-border-color: var(--an-border);
+  --tb-odd-bg: color-mix(in srgb, var(--an-surface) 55%, var(--an-bg));
+  --tb-even-bg: var(--an-bg);
+  --tb-border-color: var(--an-border);
+  --highlight-bg-color: var(--an-deep);
+  --inline-code-bg: rgb(var(--an-accent-rgb) / 8%);
+  --highlighter-rouge-color: var(--an-accent-soft);
+  --code-color: var(--an-text);
+  --language-border-color: var(--an-border);
+  --tag-border: var(--an-border);
+  --tag-hover: var(--an-raised);
+  --dash-color: var(--an-border);
+  --post-list-text-color: var(--an-muted);
+  --btn-paginator-hover-color: var(--an-raised);
+  --prompt-text-color: var(--an-text);
+  --prompt-tip-bg: rgb(123 216 143 / 9%);
+  --prompt-tip-icon-color: var(--an-green);
+  --prompt-info-bg: rgb(var(--an-accent-rgb) / 7%);
+  --prompt-info-icon-color: var(--an-accent);
+  --prompt-warning-bg: rgb(255 181 71 / 14%);
+  --prompt-warning-icon-color: var(--an-warn);
+  --prompt-danger-bg: rgb(255 92 87 / 12%);
+  --prompt-danger-icon-color: var(--an-red);
+  --timeline-node-bg: var(--an-accent);
+  --timeline-color: var(--an-border);
+  --categories-border: var(--an-border);
+  --categories-hover-bg: var(--an-raised);
+}
+
+::selection {
+  background: var(--an-accent);
+  color: var(--an-bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--an-accent);
+  outline-offset: 2px;
+}
+
+/* --- Tipografía ----------------------------------------------------------- */
+
+/* Sitios donde Chirpy fija Lato/Oswald a mano */
+kbd,
+#topbar-title,
+.pagination,
+#archives .date,
+.tag span,
+.post-meta,
+.post-tail-wrapper,
+#post-list .card-body .card-text {
+  font-family: var(--an-mono);
+}
+
+/* Títulos dentro de los artículos: prefijo de Markdown como marca de nivel */
+.content h2::before,
+.content h3::before {
+  color: var(--an-accent-dim);
+  font-weight: 400;
+  margin-right: 0.4em;
+}
+
+.content h2::before {
+  content: '##';
+}
+
+.content h3::before {
+  content: '###';
+}
+
+/* Tablas (IOCs): monoespaciadas y compactas */
+.content table {
+  font-family: var(--an-mono);
+  font-size: 0.85rem;
+}
+
+/* Enlaces del texto */
+.content a {
+  text-decoration-style: dotted;
+}
+
+/* --- Barra superior: marca + navegación ------------------------------------ */
+
+#topbar .an-brand {
+  font-family: 'VT323', var(--an-mono);
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--an-accent);
+  white-space: nowrap;
+  text-decoration: none;
+  border-bottom: 0;
+  text-shadow: 0 0 8px rgb(var(--an-accent-rgb) / 45%);
+}
+
+#topbar .an-prompt {
+  color: var(--an-muted);
+  text-shadow: none;
+}
+
+#topbar .an-cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.9em;
+  margin-left: 0.15em;
+  vertical-align: -0.08em;
+  background: currentcolor;
+  animation: an-blink 1.1s steps(1) infinite;
+}
+
+@keyframes an-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #topbar .an-cursor {
+    animation: none;
+  }
+}
+
+#topnav {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.4rem;
+  font-family: var(--an-mono);
+  font-size: 0.9rem;
+}
+
+#topnav a {
+  color: var(--an-muted);
+  text-decoration: none;
+  border-bottom: 0;
+  white-space: nowrap;
+}
+
+#topnav a:hover,
+#topnav a.active {
+  color: var(--an-accent);
+}
+
+#topnav a.active::before {
+  content: '>';
+  margin-right: 0.35em;
+}
+
+/* --- Escritorio (>= 850px): fuera la barra lateral, más ancho para el post -- */
+
+@media all and (min-width: 850px) {
+  /* !important: el aside lleva la clase .d-flex de Bootstrap, que también lo usa */
+  #sidebar {
+    display: none !important;
+  }
+
+  #main-wrapper {
+    margin-left: 0;
+  }
+
+  #topbar-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--an-border);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  #topbar {
+    gap: 1.5rem;
+  }
+
+  #topbar #search {
+    margin-left: auto !important;
+  }
+
+  #back-to-top {
+    right: 2rem;
+  }
+
+  #toc-popup {
+    left: 0;
+  }
+}
+
+/* --- Móvil (< 850px): se mantiene el menú lateral desplegable de Chirpy ---- */
+
+@media all and (max-width: 849.98px) {
+  #topbar .an-brand,
+  #topnav {
+    display: none;
+  }
+}
+/* --- Pantallas anchas (>= 1200px): índice a la izquierda, artículo más ancho -- */
+:root {
+  --an-panel-width: 250px;   /* ancho de la columna del índice (Chirpy usa 25%) */
+  --an-page-max: 1440px;   /* ancho máximo de toda la página */
+}
+
+@media all and (min-width: 1200px) {
+  #main-wrapper > .container {
+    max-width: var(--an-page-max);
+  }
+
+  #panel-wrapper {
+    order: -1;
+    width: var(--an-panel-width);
+    padding-left: 0 !important; /* anula la utilidad .ps-2 de Bootstrap */
+    padding-right: 1.5rem;
+  }
+
+  #main-wrapper main {
+    width: calc(100% - var(--an-panel-width));
+    padding-right: 1.5rem !important; /* Chirpy reserva 4.5rem a partir de 1650px */
+  }
+
+  /* Pie, posts relacionados y navegación: alineados con el artículo */
+  #tail-wrapper {
+    margin-left: var(--an-panel-width);
+    width: calc(100% - var(--an-panel-width));
+  }
+}

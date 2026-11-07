@@ -1,0 +1,60 @@
+<!-- The Top Bar (override: navegación horizontal en escritorio, sin barra lateral) -->
+
+<header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar">
+  <div
+    id="topbar"
+    class="d-flex align-items-center justify-content-between px-lg-3 h-100"
+  >
+    <!-- Marca + navegación (solo escritorio) -->
+    <a class="an-brand notranslate" translate="no" href="{{ '/' | relative_url }}" aria-label="{{ site.title }}">
+      <span class="an-prompt">$&nbsp;</span>{{ site.title }}<span class="an-cursor" aria-hidden="true"></span>
+    </a>
+
+    <nav id="topnav" aria-label="Navegación principal">
+      <a href="{{ '/' | relative_url }}"{% if page.layout == 'home' %} class="active" aria-current="page"{% endif %}>
+        {{- site.data.locales[include.lang].tabs.home | default: 'home' | downcase -}}
+      </a>
+      {% for tab in site.tabs %}
+        {% capture tab_name %}{{ tab.url | split: '/' }}{% endcapture %}
+        <a href="{{ tab.url | relative_url }}"{% if tab.url == page.url %} class="active" aria-current="page"{% endif %}>
+          {{- site.data.locales[include.lang].tabs[tab_name] | default: tab.title | downcase -}}
+        </a>
+      {% endfor %}
+    </nav>
+
+    <!-- Lo siguiente es el comportamiento original de Chirpy (móvil + búsqueda) -->
+    <button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar">
+      <i class="fas fa-bars fa-fw"></i>
+    </button>
+
+    <div id="topbar-title">
+      {% if page.layout == 'home' %}
+        {{- site.data.locales[include.lang].title | default: site.title -}}
+      {% elsif page.collection == 'tabs' or page.layout == 'page' %}
+        {%- capture tab_key -%}{{ page.url | split: '/' }}{%- endcapture -%}
+        {{- site.data.locales[include.lang].tabs[tab_key] | default: page.title -}}
+      {% else %}
+        {{- site.data.locales[include.lang].layout[page.layout] | default: page.layout | capitalize -}}
+      {% endif %}
+    </div>
+
+    <button type="button" id="search-trigger" class="btn btn-link" aria-label="Search">
+      <i class="fas fa-search fa-fw"></i>
+    </button>
+
+    <search id="search" class="align-items-center ms-3 ms-lg-0">
+      <i class="fas fa-search fa-fw"></i>
+      <input
+        class="form-control"
+        id="search-input"
+        type="search"
+        aria-label="search"
+        autocomplete="off"
+        placeholder="grep..."
+      >
+    </search>
+    <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">
+      {{- site.data.locales[include.lang].search.cancel -}}
+    </button>
+  </div>
+</header>

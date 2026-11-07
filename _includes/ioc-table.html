@@ -1,0 +1,12 @@
+{% assign iocs = site.data.iocs[include.set] %}
+<table translate="no">
+  <thead><tr><th>Tipo</th><th>Valor</th><th>Primera vez</th><th>Confianza</th><th>Notas</th></tr></thead>
+  <tbody>
+  {% for i in iocs %}
+    <tr>
+      <td>{{ i.tipo }}</td><td><code>{{ i.valor }}</code></td>
+      <td>{{ i.primera_vez }}</td><td>{{ i.confianza }}</td><td>{{ i.notas }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

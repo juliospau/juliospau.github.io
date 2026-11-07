@@ -1,0 +1,114 @@
+# IOCs — Infraestructura de device code phishing compatible con N0va
+# Todos los dominios están defangeados. Fechas = primera observación en urlscan
+# (día exacto cuando aparece en la captura; "2026-09" cuando solo se conoce el mes).
+# Se omiten a propósito los subdominios que contienen nombres de personas u
+# organizaciones objetivo, y las IP compartidas de Cloudflare y Linode.
+
+# --- Backend y dominios dedicados ---
+- tipo: dominio
+  valor: "mlspolicies[.]help"
+  primera_vez: "2026-09-14"
+  confianza: alta
+  notas: "Backend API del kit: /api/verification/init, fingerprint y check"
+- tipo: dominio
+  valor: "singlesso[.]help"
+  primera_vez: "2026-09"
+  confianza: media
+  notas: "Subdominios con patrón *-sso.singlesso[.]help; misma estructura según urlscan Similar"
+- tipo: dominio
+  valor: "authorizationsso[.]help"
+  primera_vez: "2026-09"
+  confianza: media
+  notas: "Misma estructura según urlscan Similar y coincidencia de hash"
+- tipo: dominio
+  valor: "gxpress[.]autos"
+  primera_vez: "2026-09-16"
+  confianza: media
+  notas: "Redirector (HTTP 301) hacia un señuelo de Microsoft Teams en workers.dev"
+
+# --- Señuelos en Cloudflare Workers ---
+- tipo: host
+  valor: "quiet-glade-0b38.gingerbeaulieu0785.workers[.]dev"
+  primera_vez: "2026-09-14"
+  confianza: alta
+  notas: "Indicador semilla de la investigación"
+- tipo: host
+  valor: "dark-glade-d676.bernitajames828-caa.workers[.]dev"
+  primera_vez: "2026-09-16"
+  confianza: alta
+  notas: "Señuelo Microsoft Teams"
+- tipo: host
+  valor: "red-credit-0608.bernitajames828-caa.workers[.]dev"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Misma cuenta de Workers que el anterior; coincidencia de hash"
+- tipo: host
+  valor: "agml.b29e185437704fe0a494f89f.workers[.]dev"
+  primera_vez: "2026-09-10"
+  confianza: alta
+  notas: "Señuelo DocuSign en francés; llega vía acortador y redirección abierta de Google"
+- tipo: host
+  valor: "quiet-lab-c44b.b29e185437704fe0a494f89f.workers[.]dev"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Misma cuenta de Workers que el anterior; coincidencia de hash"
+
+# --- Señuelos en Linode (Akamai) Object Storage ---
+- tipo: host
+  valor: "msoft-common-gbz-8999.us-sea-1.linodeobjects[.]com"
+  primera_vez: "2026-09-25"
+  confianza: alta
+  notas: "Señuelo Microsoft (cloudzymsfto.html)"
+- tipo: host
+  valor: "spacehub.us-iad-10.linodeobjects[.]com"
+  primera_vez: "2026-09-09"
+  confianza: alta
+  notas: "Señuelo Microsoft"
+- tipo: host
+  valor: "panel-deploy-60bef09b.us-iad-10.linodeobjects[.]com"
+  primera_vez: "2026-09-24"
+  confianza: alta
+  notas: "Señuelo Adobe Sign (adobe-1790034626137.html)"
+- tipo: host
+  valor: "portaccess098.us-iad-10.linodeobjects[.]com"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Coincidencia de hash (fingerprint y check)"
+- tipo: host
+  valor: "workspace.us-iad-10.linodeobjects[.]com"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Coincidencia de hash (fingerprint)"
+- tipo: host
+  valor: "lib-0568.website-us-southeast-1.linodeobjects[.]com"
+  primera_vez: "2026-09"
+  confianza: media
+  notas: "Coincidencia de hash (check)"
+- tipo: host
+  valor: "mxoff-standard-v.us-iad-10.linodeobjects[.]com"
+  primera_vez: "2026-09"
+  confianza: media
+  notas: "Resultado de la consulta de hunting; no revisado individualmente"
+- tipo: host
+  valor: "msoff-x-common-standard-com.us-east-1.linodeobjects[.]com"
+  primera_vez: "2026-09"
+  confianza: media
+  notas: "Resultado de la consulta de hunting; no revisado individualmente"
+
+# --- Artefactos del kit ---
+- tipo: sha256
+  valor: "63e76f558d6252de28a70d6edec7a9fa6a1b36228b3872ec85edef9b69fd1d0d"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Respuesta del endpoint fingerprint; ~275 páginas en urlscan"
+- tipo: sha256
+  valor: "1debcaf354d04a250d25321ce3aebd5037fb7c69408582183dbfdf8cc7a6a332"
+  primera_vez: "2026-09"
+  confianza: alta
+  notas: "Respuesta del endpoint check; ~55 páginas en urlscan"
+- tipo: ruta
+  valor: "/api/verification/init"
+  primera_vez: "2026-09-14"
+  confianza: alta
+  notas: "Inicio de sesión del kit; coincide con el patrón publicado por ANY.RUN para N0va"
+
