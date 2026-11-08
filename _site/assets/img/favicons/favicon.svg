@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" shape-rendering="crispEdges"><rect width="48" height="48" rx="6" fill="#0e1214"/><rect x="15" y="0" width="3" height="48" fill="#26323b"/><rect x="30" y="0" width="3" height="48" fill="#26323b"/><rect x="0" y="15" width="48" height="3" fill="#26323b"/><rect x="0" y="30" width="48" height="3" fill="#26323b"/><rect x="18" y="3" width="12" height="12" rx="2" fill="#ffb547"/><rect x="33" y="18" width="12" height="12" rx="2" fill="#ffb547"/><rect x="3" y="33" width="12" height="12" rx="2" fill="#ffb547"/><rect x="18" y="33" width="12" height="12" rx="2" fill="#ffb547"/><rect x="33" y="33" width="12" height="12" rx="2" fill="#ffb547"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="13" fill="#0d1114"/>
+  <g stroke="#ffb547" stroke-opacity="0.55" stroke-width="2">
+    <path d="M32 32 L12 12 M32 32 L53 14 M32 32 L50 52"/>
+  </g>
+  <circle cx="32" cy="32" r="17" fill="#0d1114" stroke="#ffb547" stroke-width="4"/>
+  <g stroke="#ffb547" stroke-width="4" stroke-linecap="round"><path d="M32 9v8M32 47v8M9 32h8M47 32h8"/></g>
+  <g fill="#ffb547"><circle cx="11" cy="11" r="4.5"/><circle cx="54" cy="13" r="4"/><circle cx="51" cy="53" r="4.5"/></g>
+  <polygon points="32.00,21.00 34.70,28.28 42.46,28.60 36.37,33.42 38.47,40.90 32.00,36.60 25.53,40.90 27.63,33.42 21.54,28.60 29.30,28.28" fill="#ff3b3b"/>
+</svg>

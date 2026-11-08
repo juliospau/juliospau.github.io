@@ -11,7 +11,7 @@ mermaid: true
 toc: true
 media_subpath: /assets/img/posts/redguard/
 image:
-  path: shodan-html-hash.webp
+  path: redguard-esquema.webp
   alt: Servidores RedGuard con la configuración por defecto en Shodan
 ---
 

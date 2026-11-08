@@ -1,0 +1,211 @@
+# IOCs — Infraestructura de TraderTraitor (FLATROOF / ROOFDECK)
+# Autoría de los indicadores de partida:
+#   - Michael Koczwara (@MichalKoczwara), publicación en X del 5 de noviembre de 2026
+#   - Hive Pro, aviso TA2026302 (15 de octubre de 2026)
+# "Nuevo" = procede del enriquecimiento propio (FOFA, VirusTotal, urlscan, Shodan,
+# crt.sh, abuse.ch) y no figura en esas dos fuentes. Valores de red defangeados.
+
+# --- Certificados: una CA, tres operadores ---
+- tipo: cert emisor
+  valor: "mkcert ub@ub-Standard-PC-Q35-ICH9-2009"
+  primera_vez: "2025-06-20"
+  confianza: alta
+  notas: "CA de mkcert del operador ub. Fuente: SentinelLabs / Hive Pro"
+- tipo: cert OU
+  valor: "halid@halid-Raider-GE78-HX-14VIG (Halid)"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "Nuevo. Operador con certificados firmados por la CA de ub en 3 servidores (FOFA)"
+- tipo: cert OU
+  valor: "yuli@Raider-GE78-HX-14VIG (Yuli)"
+  primera_vez: "2025"
+  confianza: alta
+  notas: "Nuevo. Operador con certificados firmados por la CA de ub en 6 servidores (FOFA)"
+- tipo: cert sha256
+  valor: "4b2d3e8ccce8920a6d01e7d02b84236545a20e5f754b3eec253f8b416b731daa"
+  primera_vez: "2025-06-20"
+  confianza: alta
+  notas: "Certificado mkcert fijado por ROOFDECK. Fuente: SentinelLabs / Hive Pro"
+- tipo: cert serie
+  valor: "7fcf3a902e72a9a74317b856fddf5ce1"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "Nuevo. Certificado de ub en 213.111.148[.]202:10443; su SAN filtra las IPs privadas 192.168.1.49 y 192.168.122.95"
+- tipo: cert serie
+  valor: "0a4a67a1a2329142cc3ecdac9fa2153e"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "Nuevo. Certificado de halid en 92.242.187[.]214 con arusupport-region1-webhook[.]online en el SAN"
+- tipo: cert serie
+  valor: "8651ed20342c9ab65b223a42ce2827e3"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "Nuevo. Certificado de yuli en 213.111.146[.]132 con commsouthindia[.]com (C2 de ROOFDECK en LayerZero) en el SAN"
+
+# --- Servidores ligados al robo de KelpDAO ---
+- tipo: ip:puerto
+  valor: "213.111.148[.]202:10443"
+  primera_vez: "2025-08-12"
+  confianza: alta
+  notas: "Alojó io.caiai[.]net, C2 de FLATROOF en LayerZero (también node. y webio.). Certificado de ub con IPs privadas"
+- tipo: dominio
+  valor: "io.caiai[.]net"
+  primera_vez: "2025-08-12"
+  confianza: alta
+  notas: "C2 de FLATROOF (LayerZero). En 213.111.148[.]202"
+- tipo: dominio
+  valor: "commsouthindia[.]com"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "C2 de ROOFDECK (LayerZero). En el certificado de yuli de 213.111.146[.]132 (FOFA)"
+
+# --- Servidor de origen de un C2 de FLATROOF tras Cloudflare ---
+- tipo: ip:puerto
+  valor: "92.242.187[.]214:443"
+  primera_vez: "2026-07-02"
+  confianza: alta
+  notas: "Nuevo. Probable origen de arusupport-region1-webhook[.]online (certificado de halid). Sigue con la CA: urlscan, 16-oct-2026"
+- tipo: dominio
+  valor: "arusupport-region1-webhook[.]online"
+  primera_vez: "2026-04-25"
+  confianza: alta
+  notas: "C2 webhook de FLATROOF (Zscaler), tras Cloudflare. Registrado 7 días después del robo"
+
+# --- Registros falsos de Terraform: dónde estaban alojados ---
+- tipo: ip
+  valor: "31.42.177[.]193"
+  primera_vez: "2025-12-03"
+  confianza: alta
+  notas: "Nuevo. Alojó registry. y diagnose.hashicorp-aws[.]com, los dominios usados contra LayerZero"
+- tipo: ip
+  valor: "187.124.246[.]227"
+  primera_vez: "2026-03-31"
+  confianza: alta
+  notas: "Nuevo. Alojó registry.hashicorp-aws[.]io"
+- tipo: ip
+  valor: "85.137.56[.]217"
+  primera_vez: "2026-04-28"
+  confianza: alta
+  notas: "Nuevo. Alojó registry. y diagnose.hashicorp-terraform[.]io (abr-may 2026); mismo /24 que grenight[.]com"
+- tipo: ip
+  valor: "177.7.36[.]67"
+  primera_vez: "2026-06-16"
+  confianza: media
+  notas: "Nuevo. Registro DNS actual de registry.hashicorp-aws[.]io"
+- tipo: ip
+  valor: "177.7.33[.]245"
+  primera_vez: "2026-04-26"
+  confianza: alta
+  notas: "Nuevo. Alojó supportaru.serveftp[.]com (abr-jul 2026), primera carga del loader según Zscaler"
+
+# --- Copias del C2 de ROOFDECK storage.hubpage.cloud ---
+- tipo: ip:puerto
+  valor: "45.11.59[.]99:443"
+  primera_vez: "2026"
+  confianza: media
+  notas: "Koczwara. Certificado de ub para storage.hubpage[.]cloud (FOFA). Ya no lo presenta"
+- tipo: ip:puerto
+  valor: "78.141.211[.]155:443"
+  primera_vez: "2026"
+  confianza: media
+  notas: "Koczwara. Certificado de yuli para storage.hubpage[.]cloud (FOFA). Vultr; hoy solo DNS"
+- tipo: ip
+  valor: "104.219.250[.]37"
+  primera_vez: "2026-09-18"
+  confianza: media
+  notas: "Nuevo. storage.hubpage[.]cloud se movió aquí tras los informes"
+- tipo: ip
+  valor: "2.59.170[.]20"
+  primera_vez: "2026-09-18"
+  confianza: media
+  notas: "Nuevo. storage.hubpage[.]cloud se movió aquí tras los informes"
+
+# --- Otros servidores de los operadores ---
+- tipo: ip:puerto
+  valor: "45.11.59[.]184:443"
+  primera_vez: "2025-04-17"
+  confianza: media
+  notas: "Koczwara. Certificado de yuli para diamonddtrailers[.]com (FOFA); alojó preferred-resources[.]com en 2025"
+- tipo: ip:puerto
+  valor: "195.66.213[.]5:443"
+  primera_vez: "2026-02-20"
+  confianza: media
+  notas: "Koczwara. Certificado de ub para freehealth[.]lat (FOFA); alojó stakepayment[.]icu y techpay-stake[.]com"
+- tipo: dominio
+  valor: "itcy-sysvalidatorit[.]shop"
+  primera_vez: "2026-07-30"
+  confianza: media
+  notas: "Koczwara. En el certificado de halid de 213.111.148[.]242 (FOFA)"
+- tipo: dominio
+  valor: "computing.servehttp[.]com"
+  primera_vez: "2026"
+  confianza: media
+  notas: "Nuevo. En el certificado de ub de 185.66.91[.]112, junto a delay.servehttp[.]com (FOFA)"
+- tipo: dominio
+  valor: "fa.grenight[.]com"
+  primera_vez: "2026-04-20"
+  confianza: alta
+  notas: "Nuevo. En 85.137.56[.]10, el día que ese servidor sirvió la tercera fase"
+- tipo: dominio
+  valor: "computing.sytes[.]net"
+  primera_vez: "2025-07-21"
+  confianza: media
+  notas: "Nuevo. En 176.97.114[.]232, la misma IP que technicais.sytes[.]net"
+- tipo: dominio
+  valor: "wss.servehttp[.]com"
+  primera_vez: "2025-06-21"
+  confianza: media
+  notas: "Nuevo. En 185.254.198[.]90, la misma IP que wss.sytes[.]net"
+- tipo: dominio
+  valor: "show-network[.]online"
+  primera_vez: "2025-02-09"
+  confianza: media
+  notas: "Nuevo. En 45.11.59[.]140 un año antes que storage.hubpage[.]cloud"
+
+# --- Muestras de la campaña de Terraform (identificación confirmada por ReversingLabs) ---
+# Ninguna está confirmada en el robo a Binance (29-oct-2026).
+- tipo: sha256
+  valor: "188bd4fc222c9615540884920caf37ea88bcbea7488e1fb98709e357dd096666"
+  primera_vez: "2026-07-29"
+  confianza: alta
+  notas: "MD5 9d78ece0... del aviso. terraform-provider-awsbeta_v1.0.0, el proveedor de Terraform troyanizado (Mach-O en Go). Confirmado por ReversingLabs"
+- tipo: sha256
+  valor: "451b586ec9d3c997b319986a1177829653e8ae641c953c05ede6a38616f2da97"
+  primera_vez: "2026-07-29"
+  confianza: alta
+  notas: "MD5 73adaea9... del aviso. safari_updater, el loader (script de shell, YARA FreddyBearDropper). Confirmado por ReversingLabs"
+
+- tipo: sha256
+  valor: "62e988e9affcd000657bef4db47eb2e85c9a4cc42f4832780a02e19624e36e38"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "ReversingLabs. Falso fichero de fuente (WOFF) cifrado con AES-256-CBC que contiene FLATROOF; lo descarga safari_updater"
+
+# --- Siguen presentando la CA (noviembre de 2026) ---
+- tipo: ip:puerto
+  valor: "85.137.56[.]245:443"
+  primera_vez: "2026-04-20"
+  confianza: alta
+  notas: "C2 de ROOFDECK (grenight[.]com), certificado de halid. Sigue con la CA: Shodan, 24-oct-2026"
+- tipo: ip:puerto
+  valor: "213.111.148[.]242:443"
+  primera_vez: "2026"
+  confianza: alta
+  notas: "Koczwara, certificado de halid. Sigue con la CA: Shodan, 5-nov-2026"
+
+# --- IPs reasignadas: NO bloquear sin revisar ---
+- tipo: ip
+  valor: "185.66.91[.]112"
+  primera_vez: "2025-09-16"
+  confianza: baja
+  notas: "Certificado de ub (delay.servehttp[.]com, C2 de ROOFDECK según Zscaler). Reasignada: IPTV desde oct-2026"
+- tipo: ip
+  valor: "213.111.146[.]132"
+  primera_vez: "2025-09-01"
+  confianza: baja
+  notas: "Certificado de yuli con commsouthindia[.]com. Reasignada: hoy aloja un servidor de correo ajeno"
+- tipo: ip
+  valor: "85.137.56[.]161"
+  primera_vez: "2026-04-27"
+  confianza: baja
+  notas: "Certificado de yuli (vaimage[.]com). Reasignada: hoy es una máquina Windows con WinRM"
