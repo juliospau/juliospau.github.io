@@ -1,0 +1,45 @@
+# IOCs — Servidores de Mythic C2 expuestos (configuración por defecto)
+# IPs defangeadas. Fechas = observación en Shodan (15 de agosto de 2026).
+# Mythic es un framework de red team de código abierto: un servidor de Mythic
+# no es malicioso por definición. Se omiten las IPs de conexiones residenciales.
+
+- tipo: ip
+  valor: "62.4.0[.]66"
+  primera_vez: "2026-08-15"
+  confianza: alta
+  notas: "Scaleway (Lelystad, NL); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-04-20"
+- tipo: ip
+  valor: "114.132.155[.]197"
+  primera_vez: "2026-08-15"
+  confianza: alta
+  notas: "Tencent Cloud (China); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-08-02"
+- tipo: ip
+  valor: "43.133.165[.]151"
+  primera_vez: "2026-08-15"
+  confianza: alta
+  notas: "APNIC (Tokio); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-05-24"
+- tipo: ip
+  valor: "64.227.159[.]29"
+  primera_vez: "2026-08-15"
+  confianza: media
+  notas: "DigitalOcean (India); perfil HTTP por defecto en el puerto 80"
+- tipo: ip
+  valor: "64.89.162[.]117"
+  primera_vez: "2026-08-15"
+  confianza: media
+  notas: "Estados Unidos; perfil HTTP por defecto en el puerto 80"
+- tipo: ip
+  valor: "172.174.234[.]34"
+  primera_vez: "2026-08-15"
+  confianza: media
+  notas: "Microsoft (Estados Unidos); perfil HTTP por defecto en el puerto 80"
+- tipo: patrón
+  valor: "200 OK + Server: nginx/1.25.5 + text/html + Content-Length: 585 + Accept-Ranges: bytes"
+  primera_vez: "2026-08-15"
+  confianza: alta
+  notas: "Huella del panel web (puerto 7443); depende de la versión de nginx y de la interfaz"
+- tipo: patrón
+  valor: "404 + Server: NetDNA-cache/2.2 + application/javascript; charset=utf-8 + Content-Length: 0"
+  primera_vez: "2026-08-15"
+  confianza: media
+  notas: "Huella del perfil HTTP por defecto (puerto 80); es la que contactan los agentes"

@@ -18,5 +18,6 @@ Las investigaciones se realizan principalmente con la ayuda de las siguientes he
 - https://app.validin.com/
 - https://urlscan.io/
 - https://www.virustotal.com/
+- https://en.fofa.info/
 
 Cada post incluye los indicadores, su nivel de confianza y las limitaciones del análisis. Todo el contenido es **TLP:CLEAR**.

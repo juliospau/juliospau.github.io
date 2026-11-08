@@ -1,0 +1,10 @@
+tipo,valor,primera_vez,confianza,notas
+ip,"62.4.0[.]66",2026-08-15,alta,"Scaleway (Lelystad, NL); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-04-20"
+ip,"114.132.155[.]197",2026-08-15,alta,"Tencent Cloud (China); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-08-02"
+ip,"43.133.165[.]151",2026-08-15,alta,"APNIC (Tokio); panel de Mythic en 7443, certificado O=Mythic; interfaz con fecha 2026-05-24"
+ip,"64.227.159[.]29",2026-08-15,media,"DigitalOcean (India); perfil HTTP por defecto en el puerto 80"
+ip,"64.89.162[.]117",2026-08-15,media,"Estados Unidos; perfil HTTP por defecto en el puerto 80"
+ip,"172.174.234[.]34",2026-08-15,media,"Microsoft (Estados Unidos); perfil HTTP por defecto en el puerto 80"
+patrón,"200 OK + Server: nginx/1.25.5 + text/html + Content-Length: 585 + Accept-Ranges: bytes",2026-08-15,alta,"Huella del panel web (puerto 7443); depende de la versión de nginx y de la interfaz"
+patrón,"404 + Server: NetDNA-cache/2.2 + application/javascript; charset=utf-8 + Content-Length: 0",2026-08-15,media,"Huella del perfil HTTP por defecto (puerto 80); es la que contactan los agentes"
+
