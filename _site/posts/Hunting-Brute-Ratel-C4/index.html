@@ -1,28 +1,3943 @@
-<!doctype html><html lang="es"data-bs-theme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e"><meta name="viewport" content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover" ><meta name="generator" content="Jekyll v4.4.1" /><meta property="og:title" content="Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada" /><meta property="og:locale" content="es" /><meta name="description" content="Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2." /><meta name="twitter:description" property="og:description" content="Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2." /><link rel="canonical" href="https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/" /><meta property="og:url" content="https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/" /><meta property="og:site_name" content="Adversary’s Notes" /><meta property="og:image" content="https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/portada.webp" /><meta property="og:image:alt" content="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2026-11-07T14:00:00+01:00" /><meta property="article:modified_time" content="2026-11-07T14:00:00+01:00" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:image" content="https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/portada.webp" /><meta name="twitter:image:alt" content="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" /><meta name="twitter:title" content="Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada" /><meta name="twitter:site" content="@" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-11-07T14:00:00+01:00","datePublished":"2026-11-07T14:00:00+01:00","description":"Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.","headline":"Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada","image":{"alt":"Brute Ratel C4: un servidor responde 200 OK con el texto Page not found","url":"https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/portada.webp","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/"},"url":"https://juliospau.github.io/posts/Hunting-Brute-Ratel-C4/"}</script><title>Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada | Adversary's Notes</title><link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png" sizes="96x96"><link rel="icon" type="image/svg+xml" href="/assets/img/favicons/favicon.svg"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com" ><link rel="dns-prefetch" href="https://fonts.googleapis.com" ><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="dns-prefetch" href="https://fonts.gstatic.com" ><link rel="preconnect" href="https://cdn.jsdelivr.net" ><link rel="dns-prefetch" href="https://cdn.jsdelivr.net" ><link rel="stylesheet" href="/assets/css/jekyll-theme-chirpy.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Source+Sans+Pro:wght@400;600;700;900&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3/dist/css/glightbox.min.css"> <script src="/assets/js/dist/theme.min.js"></script> <script defer src="https://cdn.jsdelivr.net/combine/npm/simple-jekyll-search@1/dest/simple-jekyll-search.min.js,npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.umd.min.js,npm/glightbox@3/dist/js/glightbox.min.js,npm/clipboard@2/dist/clipboard.min.js,npm/dayjs@1/dayjs.min.js,npm/dayjs@1/locale/en.js,npm/dayjs@1/plugin/relativeTime.js,npm/dayjs@1/plugin/localizedFormat.js,npm/tocbot@4/dist/tocbot.min.js,npm/mermaid@11/dist/mermaid.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script defer src="/app.min.js?baseurl=&register=true" ></script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=VT323&display=swap" ><body><aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end"><header class="profile-wrapper"> <a href="/" id="avatar" class="rounded-circle"></a> <a class="site-title d-block" href="/">Adversary's Notes</a><p class="site-subtitle fst-italic mb-0">APTs & Infrastructure Hunting</p></header><nav class="flex-column flex-grow-1 w-100 ps-0"><ul class="nav"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream"></i> <span>CATEGORIES</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive"></i> <span>ARCHIVES</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info-circle"></i> <span>ABOUT</span> </a></ul></nav><div class="sidebar-bottom d-flex flex-wrap align-items-center w-100"> <a href="/feed.xml" aria-label="rss" > <i class="fas fa-rss"></i> </a></div></aside><div id="main-wrapper" class="d-flex justify-content-center"><div class="container d-flex flex-column px-xxl-5"><header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar"><div id="topbar" class="d-flex align-items-center justify-content-between px-lg-3 h-100" > <a class="an-brand notranslate" translate="no" href="/" aria-label="Adversary's Notes"> <span class="an-prompt">$&nbsp;</span>Adversary's Notes<span class="an-cursor" aria-hidden="true"></span> </a><nav id="topnav" aria-label="Navegación principal"> <a href="/">home</a> <a href="/categories/">categories</a> <a href="/tags/">tags</a> <a href="/archives/">archives</a> <a href="/about/">about</a></nav><button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar"> <i class="fas fa-bars fa-fw"></i> </button><div id="topbar-title"> Post</div><button type="button" id="search-trigger" class="btn btn-link" aria-label="Search"> <i class="fas fa-search fa-fw"></i> </button> <search id="search" class="align-items-center ms-3 ms-lg-0"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="grep..." > </search> <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">Cancel</button></div></header><div class="row flex-grow-1"><main aria-label="Main Content" class="col-12 col-lg-11 col-xl-9 px-md-4"><article class="px-1" data-toc="true"><header><h1 data-toc-skip>Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</h1><p class="post-desc fw-light mb-4">Un servidor que dice "Page not found" pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.</p><div class="post-meta text-muted"> <span> Posted <time data-ts="1794056400" data-df="ll" data-bs-toggle="tooltip" data-bs-placement="bottom" > Nov 7, 2026 </time> </span><div class="mt-3 mb-3"> <a href="/assets/img/posts/brute-ratel/portada.webp" class="popup img-link preview-img shimmer"><img src="/assets/img/posts/brute-ratel/portada.webp" alt="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" width="1200" height="630" loading="lazy"></a><figcaption class="text-center pt-2 pb-2">Brute Ratel C4: un servidor responde 200 OK con el texto Page not found</figcaption></div><div class="d-flex justify-content-between"> <span> By <em> <a href="https://github.com/juliospau">admin</a> </em> </span><div> <span class="readtime" data-bs-toggle="tooltip" data-bs-placement="bottom" title="2081 words" > <em>11 min</em> read</span></div></div></div></header><div id="toc-bar" class="d-flex align-items-center justify-content-between invisible"> <span class="label text-truncate">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</span> <button type="button" class="toc-trigger btn me-1"> <i class="fa-solid fa-list-ul fa-fw"></i> </button></div><button id="toc-solo-trigger" type="button" class="toc-trigger btn btn-outline-secondary btn-sm"> <span class="label ps-2 pe-1">Contents</span> <i class="fa-solid fa-angle-right fa-fw"></i> </button> <dialog id="toc-popup" class="p-0"><div class="header d-flex flex-row align-items-center justify-content-between"><div class="label text-truncate py-2 ms-4">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</div><button id="toc-popup-close" type="button" class="btn-close btn-sm mx-3" aria-label="Close"></button></div><div id="toc-popup-content" class="px-4 py-3 pb-4"></div></dialog><div class="content"><blockquote class="prompt-info notranslate" translate="no"><p><strong>TLP:CLEAR</strong> · Confianza global: <strong>media</strong> · Investigación: julio de 2026 · Última actualización: 2026-11-07</p></blockquote><h2 id="ideas-clave"><span class="me-2">Ideas clave</span><a href="#ideas-clave" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p>Partiendo del punto inicial <code class="language-plaintext notranslate highlighter-rouge" translate="no">185.146.234[.]46</code>, construí una huella con la respuesta HTTP que lo caracterizaba: un <strong><code class="language-plaintext highlighter-rouge">200 OK</code></strong> con <code class="language-plaintext highlighter-rouge">Content-Type: text/plain</code> y un cuerpo de <strong>14 bytes</strong>. Al identificar el contenido a partir del hash de Shodan, resulta que ese cuerpo es el texto <strong><code class="language-plaintext highlighter-rouge">Page not found</code></strong>: el servidor dice que la página no existe, pero responde como si todo fuera bien.</p><p>Esa contradicción es la huella. Combinada con el hash del cuerpo, reduce <strong>7.259 resultados a 77</strong>, y descartando los balanceadores de carga de AWS (que devuelven una respuesta idéntica sin relación con Brute Ratel), a <strong>20 servidores</strong>. Varios ya están reportados como C2 de Brute Ratel en ThreatFox y en VirusTotal, y uno presenta un certificado con el nombre <strong><code class="language-plaintext highlighter-rouge">brute-ratel-test</code></strong>.</p><p>Mi evaluación es que el clúster corresponde a servidores de <strong>Brute Ratel C4 con confianza media</strong>. La huella es eficaz, pero el filtro que elimina AWS es amplio: además de los balanceadores de carga, descarta cualquier servidor de Brute Ratel alojado en Amazon. Propongo una alternativa más precisa en <em>Hunting</em>.</p><h2 id="contexto-qué-es-brute-ratel-c4"><span class="me-2">Contexto: qué es Brute Ratel C4</span><a href="#contexto-qué-es-brute-ratel-c4" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p><strong>Brute Ratel C4</strong> (BRc4) es un framework comercial de simulación de adversarios para equipos de red team, comparable a Cobalt Strike. Lo publicó a finales de 2020 el investigador Chetan Nayak, y está diseñado específicamente para <strong>evadir antivirus y EDR</strong>.</p><p>Su paso al uso malicioso está bien documentado:</p><ul><li><strong>Julio de 2022:</strong> Unit 42 (Palo Alto Networks) publicó el análisis de una muestra que usaba Brute Ratel, disfrazada de currículum en una imagen ISO. Su estructura recordaba al <em>tradecraft</em> de APT29, aunque Unit 42 lo presentó como un parecido, no como una atribución confirmada.<li><strong>Septiembre de 2022:</strong> una <strong>copia crackeada</strong> de la versión 1.2.2 empezó a circular gratis en foros de cibercrimen. Desde entonces, la herramienta puede usarse sin licencia, lo que la puso al alcance de grupos de ransomware y otros actores.</ul><p>Por eso, encontrar un servidor de Brute Ratel tiene dos lecturas posibles: un <strong>ejercicio de red team con licencia</strong> o una <strong>operación maliciosa con una copia pirata</strong>. La infraestructura por sí sola no permite distinguirlas.</p><h2 id="punto-de-partida"><span class="me-2">Punto de partida</span><a href="#punto-de-partida" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p>El punto de pivote inicial es <code class="language-plaintext notranslate highlighter-rouge" translate="no">185.146.234[.]46</code>. Su respuesta tenía estas características:</p><div class="language-http notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Http"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- `site.alt_lang` can specify a language different from the UI -->
+<html
+  lang="es"data-bs-theme="dark">
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e">
+  <meta
+    name="viewport"
+    content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+  ><!-- Setup Open Graph image -->
+
+  
+
+  <!-- Begin Jekyll SEO tag v2.9.1 -->
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada" />
+<meta property="og:locale" content="es" />
+<meta name="description" content="Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2." />
+<meta name="twitter:description" property="og:description" content="Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2." />
+<link rel="canonical" href="http://localhost:4000/posts/Hunting-Brute-Ratel-C4/" />
+<meta property="og:url" content="http://localhost:4000/posts/Hunting-Brute-Ratel-C4/" />
+<meta property="og:site_name" content="Adversary’s Notes" />
+<meta property="og:image" content="http://localhost:4000/posts/Hunting-Brute-Ratel-C4/portada.webp" />
+<meta property="og:image:alt" content="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-11-07T14:00:00+01:00" />
+<meta property="article:modified_time" content="2026-11-07T14:00:00+01:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="http://localhost:4000/posts/Hunting-Brute-Ratel-C4/portada.webp" />
+<meta name="twitter:image:alt" content="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" />
+<meta name="twitter:title" content="Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada" />
+<meta name="twitter:site" content="@" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-11-07T14:00:00+01:00","datePublished":"2026-11-07T14:00:00+01:00","description":"Un servidor que dice “Page not found” pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.","headline":"Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada","image":{"alt":"Brute Ratel C4: un servidor responde 200 OK con el texto Page not found","url":"http://localhost:4000/posts/Hunting-Brute-Ratel-C4/portada.webp","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/posts/Hunting-Brute-Ratel-C4/"},"url":"http://localhost:4000/posts/Hunting-Brute-Ratel-C4/"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  <title>Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada | Adversary's Notes</title>
+
+  <!--
+  The Favicons for Web, Android, Microsoft, and iOS (iPhone and iPad) Apps
+  Generated by: https://realfavicongenerator.net/
+-->
+
+
+
+<link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicons/favicon.svg">
+<link rel="shortcut icon" href="/assets/img/favicons/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png">
+
+  <link rel="manifest" href="/assets/img/favicons/site.webmanifest">
+
+
+
+  <!-- Resource Hints -->
+  
+    
+      
+        <link rel="preconnect" href="https://fonts.googleapis.com" >
+      
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" >
+      
+    
+      
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" >
+      
+    
+      
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" >
+      
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" >
+      
+    
+  
+
+  <!-- Bootstrap -->
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+  
+
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/assets/css/jekyll-theme-chirpy.css">
+
+  <!-- Web Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Source+Sans+Pro:wght@400;600;700;900&display=swap">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7/css/all.min.css">
+
+  <!-- 3rd-party Dependencies -->
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.css">
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.min.css">
+  
+
+  
+    <!-- Image Popup -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3/dist/css/glightbox.min.css">
+  
+
+  <!-- Scripts -->
+
+  <script src="/assets/js/dist/theme.min.js"></script>
+
+  <!-- JS selector for site. -->
+
+<!-- commons -->
+
+
+
+<!-- layout specified -->
+
+
+  
+
+  
+    <!-- image lazy-loading & popup & clipboard -->
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/combine/npm/simple-jekyll-search@1/dest/simple-jekyll-search.min.js,npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.umd.min.js,npm/glightbox@3/dist/js/glightbox.min.js,npm/clipboard@2/dist/clipboard.min.js,npm/dayjs@1/dayjs.min.js,npm/dayjs@1/locale/en.js,npm/dayjs@1/plugin/relativeTime.js,npm/dayjs@1/plugin/localizedFormat.js,npm/tocbot@4/dist/tocbot.min.js,npm/mermaid@11/dist/mermaid.min.js"></script>
+
+
+
+
+
+
+
+<script defer src="/assets/js/dist/post.min.js"></script>
+
+
+
+<!-- Pageviews -->
+
+  
+
+  
+
+
+
+  
+
+  <!-- Fuentes del skin: IBM Plex (texto y títulos) y VT323 (marca) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=VT323&display=swap"
+>
+<div class="gtranslate_wrapper"></div>
+<script>window.gtranslateSettings = {"default_language":"es","languages":["es","en"],"wrapper_selector":".gtranslate_wrapper"}</script>
+<script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+
+</head>
+
+
+  <body>
+    <!-- The Side Bar -->
+
+<aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end">
+  <header class="profile-wrapper">
+    <a href="/" id="avatar" class="rounded-circle"></a>
+
+    <a class="site-title d-block" href="/">Adversary's Notes</a>
+    <p class="site-subtitle fst-italic mb-0">APTs & Infrastructure Hunting</p>
+  </header>
+  <!-- .profile-wrapper -->
+
+  <nav class="flex-column flex-grow-1 w-100 ps-0">
+    <ul class="nav">
+      <!-- home -->
+      <li class="nav-item">
+        <a href="/" class="nav-link">
+          <i class="fa-fw fas fa-home"></i>
+          <span>HOME</span>
+        </a>
+      </li>
+      <!-- the real tabs -->
+      
+        <li class="nav-item">
+          <a href="/categories/" class="nav-link">
+            <i class="fa-fw fas fa-stream"></i>
+            
+
+            <span>CATEGORIES</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/tags/" class="nav-link">
+            <i class="fa-fw fas fa-tags"></i>
+            
+
+            <span>TAGS</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/archives/" class="nav-link">
+            <i class="fa-fw fas fa-archive"></i>
+            
+
+            <span>ARCHIVES</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/about/" class="nav-link">
+            <i class="fa-fw fas fa-info-circle"></i>
+            
+
+            <span>ABOUT</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+    </ul>
+  </nav>
+
+  <div class="sidebar-bottom d-flex flex-wrap align-items-center w-100">
+    
+
+    
+          
+        
+
+      
+        <a
+          href="/feed.xml"
+          aria-label="rss"
+          
+
+          
+
+          
+
+          
+        >
+          <i class="fas fa-rss"></i>
+        </a>
+      
+    
+  </div>
+  <!-- .sidebar-bottom -->
+</aside>
+<!-- #sidebar -->
+
+
+    <div id="main-wrapper" class="d-flex justify-content-center">
+      <div class="container d-flex flex-column px-xxl-5">
+        <!-- The Top Bar (override: navegación horizontal en escritorio, sin barra lateral) -->
+
+<header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar">
+  <div
+    id="topbar"
+    class="d-flex align-items-center justify-content-between px-lg-3 h-100"
+  >
+    <!-- Marca + navegación (solo escritorio) -->
+    <a class="an-brand notranslate" translate="no" href="/" aria-label="Adversary's Notes">
+      <span class="an-prompt">$&nbsp;</span>Adversary's Notes<span class="an-cursor" aria-hidden="true"></span>
+    </a>
+
+    <nav id="topnav" aria-label="Navegación principal">
+      <a href="/">home</a>
+      
+        
+        <a href="/categories/">categories</a>
+      
+        
+        <a href="/tags/">tags</a>
+      
+        
+        <a href="/archives/">archives</a>
+      
+        
+        <a href="/about/">about</a>
+      
+    </nav>
+
+    <!-- Lo siguiente es el comportamiento original de Chirpy (móvil + búsqueda) -->
+    <button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar">
+      <i class="fas fa-bars fa-fw"></i>
+    </button>
+
+    <div id="topbar-title">
+      Post
+    </div>
+
+    <button type="button" id="search-trigger" class="btn btn-link" aria-label="Search">
+      <i class="fas fa-search fa-fw"></i>
+    </button>
+
+    <search id="search" class="align-items-center ms-3 ms-lg-0">
+      <i class="fas fa-search fa-fw"></i>
+      <input
+        class="form-control"
+        id="search-input"
+        type="search"
+        aria-label="search"
+        autocomplete="off"
+        placeholder="grep..."
+      >
+    </search>
+    <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">Cancel</button>
+  </div>
+</header>
+
+
+        <div class="row flex-grow-1">
+          <main aria-label="Main Content" class="col-12 col-lg-11 col-xl-9 px-md-4">
+            
+              <!-- Refactor the HTML structure -->
+
+
+
+<!--
+  In order to allow a wide table to scroll horizontally,
+  we suround the markdown table with `<div class="table-wrapper">` and `</div>`
+-->
+
+
+
+<!--
+  Fixed kramdown code highlight rendering:
+  https://github.com/penibelst/jekyll-compress-html/issues/101
+  https://github.com/penibelst/jekyll-compress-html/issues/71#issuecomment-188144901
+-->
+
+
+
+<!-- Change the icon of checkbox -->
+
+
+
+<!-- Handle images -->
+
+
+
+
+  
+  
+
+  
+    
+      
+      
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- make sure the `<img>` is wrapped by `<a>` -->
+      
+
+      
+        <!-- create the image wrapper -->
+        
+
+        
+        
+      
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- make sure the `<img>` is wrapped by `<a>` -->
+      
+
+      
+        <!-- create the image wrapper -->
+        
+
+        
+        
+      
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- make sure the `<img>` is wrapped by `<a>` -->
+      
+
+      
+        <!-- create the image wrapper -->
+        
+
+        
+        
+      
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- make sure the `<img>` is wrapped by `<a>` -->
+      
+
+      
+        <!-- create the image wrapper -->
+        
+
+        
+        
+      
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- make sure the `<img>` is wrapped by `<a>` -->
+      
+
+      
+        <!-- create the image wrapper -->
+        
+
+        
+        
+      
+    
+
+    <!-- combine -->
+    
+  
+
+  
+
+
+<!-- Add header for code snippets -->
+
+
+
+<!-- Create heading anchors -->
+
+
+
+
+
+  
+  
+
+  
+    
+    
+
+    
+      
+        
+        
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+
+    
+  
+
+  
+  
+
+  
+    
+    
+
+    
+      
+        
+        
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+      
+      
+
+      
+    
+
+    
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+
+
+
+<!-- return -->
+
+
+
+
+
+
+
+
+
+
+<article class="px-1" data-toc="true">
+  <header>
+    <h1 data-toc-skip>Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</h1>
+    
+      <p class="post-desc fw-light mb-4">Un servidor que dice "Page not found" pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.</p>
+    
+
+    <div class="post-meta text-muted">
+      <!-- published date -->
+      <span>
+        Posted
+        <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794056400"
+  data-df="ll"
+  
+    data-bs-toggle="tooltip" data-bs-placement="bottom"
+  
+>
+  Nov  7, 2026
+</time>
+
+      </span>
+
+      <!-- lastmod date -->
+      
+
+      
+        
+        
+        
+
+        
+
+        <div class="mt-3 mb-3">
+          <a href="/assets/img/posts/brute-ratel/portada.webp" class="popup img-link preview-img shimmer"><img src="/assets/img/posts/brute-ratel/portada.webp"  alt="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" width="1200" height="630"  loading="lazy"></a><figcaption class="text-center pt-2 pb-2">Brute Ratel C4: un servidor responde 200 OK con el texto Page not found</figcaption></div>
+      
+
+      <div class="d-flex justify-content-between">
+        <!-- author(s) -->
+        <span>
+          
+
+          By
+
+          <em>
+            
+              <a href="https://github.com/juliospau">admin</a>
+            
+          </em>
+        </span>
+
+        <div>
+          <!-- pageviews -->
+          
+
+          <!-- read time -->
+          <!-- Calculate the post's reading time, and display the word count in tooltip -->
+
+
+
+<!-- words per minute -->
+
+
+
+
+
+
+
+
+
+
+<!-- return element -->
+<span
+  class="readtime"
+  data-bs-toggle="tooltip"
+  data-bs-placement="bottom"
+  title="2081 words"
+>
+  <em>11 min</em> read</span>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  
+    <div id="toc-bar" class="d-flex align-items-center justify-content-between invisible">
+      <span class="label text-truncate">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</span>
+      <button type="button" class="toc-trigger btn me-1">
+        <i class="fa-solid fa-list-ul fa-fw"></i>
+      </button>
+    </div>
+
+    <button id="toc-solo-trigger" type="button" class="toc-trigger btn btn-outline-secondary btn-sm">
+      <span class="label ps-2 pe-1">Contents</span>
+      <i class="fa-solid fa-angle-right fa-fw"></i>
+    </button>
+
+    <dialog id="toc-popup" class="p-0">
+      <div class="header d-flex flex-row align-items-center justify-content-between">
+        <div class="label text-truncate py-2 ms-4">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</div>
+        <button id="toc-popup-close" type="button" class="btn-close btn-sm mx-3" aria-label="Close"></button>
+      </div>
+      <div id="toc-popup-content" class="px-4 py-3 pb-4"></div>
+    </dialog>
+  
+
+  <div class="content">
+    <blockquote class="prompt-info notranslate" translate="no">
+  <p><strong>TLP:CLEAR</strong> · Confianza global: <strong>media</strong> · Investigación: julio de 2026 · Última actualización: 2026-11-07</p>
+</blockquote>
+
+<h2 id="ideas-clave"><span class="me-2">Ideas clave</span><a href="#ideas-clave" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<p>Partiendo del punto inicial <code class="language-plaintext notranslate highlighter-rouge" translate="no">185.146.234[.]46</code>, construí una huella con la respuesta HTTP que lo caracterizaba: un <strong><code class="language-plaintext highlighter-rouge">200 OK</code></strong> con <code class="language-plaintext highlighter-rouge">Content-Type: text/plain</code> y un cuerpo de <strong>14 bytes</strong>. Al identificar el contenido a partir del hash de Shodan, resulta que ese cuerpo es el texto <strong><code class="language-plaintext highlighter-rouge">Page not found</code></strong>: el servidor dice que la página no existe, pero responde como si todo fuera bien.</p>
+
+<p>Esa contradicción es la huella. Combinada con el hash del cuerpo, reduce <strong>7.259 resultados a 77</strong>, y descartando los balanceadores de carga de AWS (que devuelven una respuesta idéntica sin relación con Brute Ratel), a <strong>20 servidores</strong>. Varios ya están reportados como C2 de Brute Ratel en ThreatFox y en VirusTotal, y uno presenta un certificado con el nombre <strong><code class="language-plaintext highlighter-rouge">brute-ratel-test</code></strong>.</p>
+
+<p>Mi evaluación es que el clúster corresponde a servidores de <strong>Brute Ratel C4 con confianza media</strong>. La huella es eficaz, pero el filtro que elimina AWS es amplio: además de los balanceadores de carga, descarta cualquier servidor de Brute Ratel alojado en Amazon. Propongo una alternativa más precisa en <em>Hunting</em>.</p>
+
+<h2 id="contexto-qué-es-brute-ratel-c4"><span class="me-2">Contexto: qué es Brute Ratel C4</span><a href="#contexto-qué-es-brute-ratel-c4" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<p><strong>Brute Ratel C4</strong> (BRc4) es un framework comercial de simulación de adversarios para equipos de red team, comparable a Cobalt Strike. Lo publicó a finales de 2020 el investigador Chetan Nayak, y está diseñado específicamente para <strong>evadir antivirus y EDR</strong>.</p>
+
+<p>Su paso al uso malicioso está bien documentado:</p>
+
+<ul>
+  <li><strong>Julio de 2022:</strong> Unit 42 (Palo Alto Networks) publicó el análisis de una muestra que usaba Brute Ratel, disfrazada de currículum en una imagen ISO. Su estructura recordaba al <em>tradecraft</em> de APT29, aunque Unit 42 lo presentó como un parecido, no como una atribución confirmada.</li>
+  <li><strong>Septiembre de 2022:</strong> una <strong>copia crackeada</strong> de la versión 1.2.2 empezó a circular gratis en foros de cibercrimen. Desde entonces, la herramienta puede usarse sin licencia, lo que la puso al alcance de grupos de ransomware y otros actores.</li>
+</ul>
+
+<p>Por eso, encontrar un servidor de Brute Ratel tiene dos lecturas posibles: un <strong>ejercicio de red team con licencia</strong> o una <strong>operación maliciosa con una copia pirata</strong>. La infraestructura por sí sola no permite distinguirlas.</p>
+
+<h2 id="punto-de-partida"><span class="me-2">Punto de partida</span><a href="#punto-de-partida" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<p>El punto de pivote inicial es <code class="language-plaintext notranslate highlighter-rouge" translate="no">185.146.234[.]46</code>. Su respuesta tenía estas características:</p>
+
+<div class="language-http notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Http"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
 2
 3
-</pre><td class="rouge-code"><pre><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+</pre></td><td class="rouge-code"><pre><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
 <span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/plain; charset=utf-8</span>
 <span class="na">Content-Length</span><span class="p">:</span> <span class="s">14</span>
-</pre></table></code></div></div><p>Cuando hice la búsqueda, el 24 de julio de 2026, Shodan no tenía registros actuales del punto inicial, así que el pivote partió del <strong>hash del cuerpo HTML</strong> y de las cabeceras: <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code>.</p><h3 id="qué-hay-en-esos-14-bytes"><span class="me-2">Qué hay en esos 14 bytes</span><a href="#qué-hay-en-esos-14-bytes" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>Shodan calcula el hash del cuerpo de cada respuesta con MurmurHash3. Probando cadenas candidatas, la que produce exactamente <code class="language-plaintext highlighter-rouge">182674321</code> es:</p><div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre><td class="rouge-code"><pre>Page not found
-</pre></table></code></div></div><p>Son 14 caracteres, sin salto de línea al final. Eso convierte la respuesta en algo llamativo:</p><div class="table-wrapper"><table class="notranslate" translate="no"><thead><tr><th>Elemento<th>Qué indica<tbody><tr><td><code class="language-plaintext highlighter-rouge">200 OK</code><td>El servidor indica que la petición ha ido bien<tr><td>Cuerpo <code class="language-plaintext highlighter-rouge">Page not found</code><td>…pero el texto dice que la página no existe<tr><td><code class="language-plaintext highlighter-rouge">text/plain; charset=utf-8</code><td>Respuesta en texto plano, sin HTML<tr><td>Sin cabecera <code class="language-plaintext highlighter-rouge">Server</code><td>En los resultados finales, el servidor no se identifica</table></div><p>Un servidor web normal devuelve <code class="language-plaintext highlighter-rouge">404</code> cuando una página no existe. Responder <code class="language-plaintext highlighter-rouge">200</code> con un mensaje de error es típico de un servidor de C2 que muestra una respuesta señuelo a quien no es un beacon legítimo.</p><h2 id="metodología-de-pivoting"><span class="me-2">Metodología de pivoting</span><a href="#metodología-de-pivoting" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><div class="notranslate" translate="no"><pre><code class="language-mermaid">graph LR
+</pre></td></tr></tbody></table></code></div></div>
+
+<p>Cuando hice la búsqueda, el 24 de julio de 2026, Shodan no tenía registros actuales del punto inicial, así que el pivote partió del <strong>hash del cuerpo HTML</strong> y de las cabeceras: <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code>.</p>
+
+<h3 id="qué-hay-en-esos-14-bytes"><span class="me-2">Qué hay en esos 14 bytes</span><a href="#qué-hay-en-esos-14-bytes" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>Shodan calcula el hash del cuerpo de cada respuesta con MurmurHash3. Probando cadenas candidatas, la que produce exactamente <code class="language-plaintext highlighter-rouge">182674321</code> es:</p>
+
+<div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>Page not found
+</pre></td></tr></tbody></table></code></div></div>
+
+<p>Son 14 caracteres, sin salto de línea al final. Eso convierte la respuesta en algo llamativo:</p>
+
+<div class="table-wrapper"><table class="notranslate" translate="no">
+  <thead>
+    <tr>
+      <th>Elemento</th>
+      <th>Qué indica</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">200 OK</code></td>
+      <td>El servidor indica que la petición ha ido bien</td>
+    </tr>
+    <tr>
+      <td>Cuerpo <code class="language-plaintext highlighter-rouge">Page not found</code></td>
+      <td>…pero el texto dice que la página no existe</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">text/plain; charset=utf-8</code></td>
+      <td>Respuesta en texto plano, sin HTML</td>
+    </tr>
+    <tr>
+      <td>Sin cabecera <code class="language-plaintext highlighter-rouge">Server</code></td>
+      <td>En los resultados finales, el servidor no se identifica</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>Un servidor web normal devuelve <code class="language-plaintext highlighter-rouge">404</code> cuando una página no existe. Responder <code class="language-plaintext highlighter-rouge">200</code> con un mensaje de error es típico de un servidor de C2 que muestra una respuesta señuelo a quien no es un beacon legítimo.</p>
+
+<h2 id="metodología-de-pivoting"><span class="me-2">Metodología de pivoting</span><a href="#metodología-de-pivoting" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<div class="notranslate" translate="no">
+
+  <pre><code class="language-mermaid">graph LR
   P["Punto inicial&lt;br/&gt;185.146.234[.]46"] --&gt;|"hash del cuerpo"| H["html_hash 182674321&lt;br/&gt;7.259 resultados"]
   H --&gt;|"+ 200 OK, text/plain, 14 bytes"| C["77 resultados"]
   C --&gt;|"sin balanceadores de AWS"| F["20 resultados"]
   F --&gt; E["VirusTotal / ThreatFox"]
   F --&gt; T["Certificados TLS&lt;br/&gt;brute-ratel-test&lt;br/&gt;LOCALHOST / Microsoft"]
   F --&gt; J["JARM&lt;br/&gt;7 valores"]
-</code></pre></div><h3 id="1-hash-del-cuerpo"><span class="me-2">1. Hash del cuerpo</span><a href="#1-hash-del-cuerpo" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>La búsqueda <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code> devolvió <strong>7.259 resultados</strong>. La mayoría no tiene nada que ver con Brute Ratel: son servidores que devuelven el mismo texto “Page not found”, pero con un <strong><code class="language-plaintext highlighter-rouge">404</code></strong>, que es lo correcto. El hash, por sí solo, no basta.</p><h3 id="2-hash--cabeceras"><span class="me-2">2. Hash + cabeceras</span><a href="#2-hash--cabeceras" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>Añadiendo las cabeceras de la respuesta (<code class="language-plaintext highlighter-rouge">200 OK</code>, <code class="language-plaintext highlighter-rouge">text/plain; charset=utf-8</code> y <code class="language-plaintext highlighter-rouge">Content-Length: 14</code>), los resultados bajaron a <strong>77</strong>. Según la investigación previa del ejercicio, esta combinación es característica de los despliegues de Brute Ratel.</p><h3 id="3-descarte-de-amazon"><span class="me-2">3. Descarte de Amazon</span><a href="#3-descarte-de-amazon" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>Al revisar los 77 resultados en VirusTotal, <strong>ninguno de los alojados en Amazon tenía relación con informes de Brute Ratel</strong>. Además, todos llevaban la cabecera <strong><code class="language-plaintext highlighter-rouge">Server: awselb/2.0</code></strong>, que identifica a los balanceadores de carga de AWS. Hasta donde sé, la añaden a las respuestas que generan ellos mismos, como las respuestas fijas configuradas para las rutas que no existen. Excluyendo las organizaciones de Amazon quedaron <strong>20 resultados</strong>:</p><div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</code></pre>
+
+</div>
+
+<h3 id="1-hash-del-cuerpo"><span class="me-2">1. Hash del cuerpo</span><a href="#1-hash-del-cuerpo" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>La búsqueda <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code> devolvió <strong>7.259 resultados</strong>. La mayoría no tiene nada que ver con Brute Ratel: son servidores que devuelven el mismo texto “Page not found”, pero con un <strong><code class="language-plaintext highlighter-rouge">404</code></strong>, que es lo correcto. El hash, por sí solo, no basta.</p>
+
+<h3 id="2-hash--cabeceras"><span class="me-2">2. Hash + cabeceras</span><a href="#2-hash--cabeceras" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>Añadiendo las cabeceras de la respuesta (<code class="language-plaintext highlighter-rouge">200 OK</code>, <code class="language-plaintext highlighter-rouge">text/plain; charset=utf-8</code> y <code class="language-plaintext highlighter-rouge">Content-Length: 14</code>), los resultados bajaron a <strong>77</strong>. Según la investigación previa del ejercicio, esta combinación es característica de los despliegues de Brute Ratel.</p>
+
+<h3 id="3-descarte-de-amazon"><span class="me-2">3. Descarte de Amazon</span><a href="#3-descarte-de-amazon" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>Al revisar los 77 resultados en VirusTotal, <strong>ninguno de los alojados en Amazon tenía relación con informes de Brute Ratel</strong>. Además, todos llevaban la cabecera <strong><code class="language-plaintext highlighter-rouge">Server: awselb/2.0</code></strong>, que identifica a los balanceadores de carga de AWS. Hasta donde sé, la añaden a las respuestas que generan ellos mismos, como las respuestas fijas configuradas para las rutas que no existen. Excluyendo las organizaciones de Amazon quedaron <strong>20 resultados</strong>:</p>
+
+<div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
 2
-</pre><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14
+</pre></td><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14
 -org:"Amazon.com, Inc." -org:"Amazon Data Services NoVa" -org:"Amazon Technologies Inc."
-</pre></table></code></div></div><p><a href="/assets/img/posts/brute-ratel/shodan-20-resultados.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/shodan-20-resultados.webp" alt="Los 20 resultados tras excluir Amazon" width="1547" height="864" loading="lazy"></a> <em>20 servidores con la huella: Estados Unidos, Alemania y Países Bajos; sobre todo en el puerto 443</em></p><h2 id="hallazgos"><span class="me-2">Hallazgos</span><a href="#hallazgos" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><h3 id="distribución-de-la-infraestructura"><span class="me-2">Distribución de la infraestructura</span><a href="#distribución-de-la-infraestructura" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><div class="table-wrapper"><table><thead><tr><th>Dimensión<th>Resultado (20 servidores)<tbody><tr><td>Países<td>Estados Unidos (5), Alemania (4), Países Bajos (3), Austria (1), Australia (1)<tr><td>Puertos<td>443 (13), 8443 (3), 80 (1), 4433 (1), 8080 (1)<tr><td>Proveedor principal<td>DigitalOcean (4)</table></div><p>Predominan los <strong>puertos HTTPS</strong> (443, 8443, 4433). Los proveedores son VPS y nubes comerciales: DigitalOcean, Hetzner y proveedores más pequeños.</p><h3 id="certificados-tls"><span class="me-2">Certificados TLS</span><a href="#certificados-tls" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>Los certificados de los resultados aportan pistas adicionales:</p><div class="table-wrapper"><table class="notranslate" translate="no"><thead><tr><th>Servidor<th>Certificado<th>Lectura<tbody><tr><td><code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> (DigitalOcean, Fráncfort)<td>Nombre común <strong><code class="language-plaintext highlighter-rouge">brute-ratel-test</code></strong><td>Explícito. Puede ser un entorno de pruebas de un red team o de un investigador<tr><td><code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> (Servers Tech, Ámsterdam)<td>Autofirmado, <strong><code class="language-plaintext highlighter-rouge">LOCALHOST</code></strong>, organización <strong>Microsoft</strong><td>Certificado falso que suplanta a Microsoft<tr><td><code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> (Ante Mediam, Kiev)<td>Organización <strong>Internet Widgits Pty Ltd</strong><td>Valor por defecto de OpenSSL: certificado generado con prisa y sin personalizar</table></div><p>No he podido comprobar si alguno de estos certificados es el que Brute Ratel genera por defecto.</p><h3 id="corroboración-externa"><span class="me-2">Corroboración externa</span><a href="#corroboración-externa" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><ul><li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">91.84.111[.]104</code></strong>: 9 de 91 motores lo marcan como malicioso en VirusTotal. <strong>ThreatFox</strong> lo registra como C2 de <strong><code class="language-plaintext highlighter-rouge">brute_ratel</code></strong> en el puerto 8443, unos tres meses antes de esta investigación, y otro usuario de la comunidad lo describe como servidor de C2 de Brute Ratel.<li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">77.88.193[.]134</code></strong>: 0 de 91 detecciones, pero VirusTotal registra <strong>dos ficheros detectados como maliciosos que se comunican con esta IP</strong>, y un comentario de la comunidad lo identifica como C2 de Brute Ratel.<li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">46.4.195[.]61</code></strong> (Hetzner): AlphaSOC lo clasifica como malware.<li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">159.89.20[.]126</code></strong>: 0 de 91 detecciones. Su DNS pasivo incluye <code class="language-plaintext highlighter-rouge">fe-2.strangled[.]net</code> (2 de 91, en febrero de 2021), pero cinco años antes de esta observación: lo más probable es que corresponda a un inquilino anterior de la IP.</ul><p><a href="/assets/img/posts/brute-ratel/vt-91-84-111-104.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/vt-91-84-111-104.webp" alt="ThreatFox registra 91.84.111.104 como C2 de Brute Ratel" width="700" loading="lazy"></a> <em>91.84.111[.]104: reportado en ThreatFox como brute_ratel (puerto 8443)</em></p><p><a href="/assets/img/posts/brute-ratel/vt-77-88-193-134.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/vt-77-88-193-134.webp" alt="VirusTotal: 77.88.193.134, con ficheros maliciosos que se comunican con la IP" width="1000" loading="lazy"></a> <em>77.88.193[.]134: dos ficheros detectados se comunican con la IP; la comunidad lo identifica como C2 de Brute Ratel</em></p><h3 id="huellas-jarm"><span class="me-2">Huellas JARM</span><a href="#huellas-jarm" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p>El análisis de facetas de Shodan sobre los 20 resultados muestra <strong>7 huellas JARM distintas</strong>, pero muy concentradas: las dos más frecuentes cubren 12 de los 20 servidores.</p><p><a href="/assets/img/posts/brute-ratel/shodan-jarm.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/shodan-jarm.webp" alt="Distribución de huellas JARM en los 20 resultados" width="1000" loading="lazy"></a> <em>Siete huellas JARM; las dos primeras agrupan 12 de los 20 servidores</em></p><p>JARM resume cómo responde la pila TLS de un servidor, así que la comparten muchas aplicaciones sin relación entre sí. <strong>No sirve como huella por sí sola</strong>, pero puede ayudar a priorizar resultados cuando se combina con la huella HTTP. Con solo 20 resultados, tampoco puede concluirse mucho de su distribución.</p><h3 id="cronología"><span class="me-2">Cronología</span><a href="#cronología" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><div class="table-wrapper"><table class="notranslate" translate="no"><thead><tr><th>Fecha<th>Evento<tbody><tr><td>Finales de 2020<td>Publicación de Brute Ratel C4<tr><td>2021-02-18<td><code class="language-plaintext highlighter-rouge">fe-2.strangled[.]net</code> resuelve a <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> (DNS pasivo, probablemente otro inquilino)<tr><td>2022-07<td>Unit 42 documenta el uso de Brute Ratel en una campaña con parecidos a APT29<tr><td>2022-09<td>Circula en foros de cibercrimen una copia crackeada de Brute Ratel 1.2.2<tr><td>~2026-04<td>ThreatFox registra <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> como C2 de brute_ratel<tr><td>~2026-05<td>La comunidad de VirusTotal identifica <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> y <code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> como C2 de Brute Ratel<tr><td>2026-07-22 / 23<td>Shodan observa la huella en <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code>, <code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> y <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code><tr><td>2026-07-24<td>Cierre de la investigación</table></div><h2 id="indicadores"><span class="me-2">Indicadores</span><a href="#indicadores" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p>Todos los indicadores están <strong>defangeados</strong>. Incluyo las dos huellas JARM más frecuentes con confianza baja: sirven para priorizar resultados, no para bloquear.</p><div class="table-wrapper"><table translate="no"><thead><tr><th>Tipo<th>Valor<th>Primera vez<th>Confianza<th>Notas<tbody><tr><td>ip<td><code>185.146.234[.]46</code><td>2026-07<td>media<td>Punto de pivote inicial; sin registros actuales en Shodan el 24 de julio de 2026<tr><td>ip<td><code>91.84.111[.]104</code><td>2026-04<td>alta<td>Servers Tech FZCO (Ámsterdam); ThreatFox: brute_ratel en el puerto 8443; certificado falso LOCALHOST / Microsoft<tr><td>ip<td><code>77.88.193[.]134</code><td>2026-05<td>media<td>Ante Mediam LLC (Kiev); comunidad de VirusTotal: C2 de Brute Ratel; 2 ficheros detectados se comunican con la IP<tr><td>ip<td><code>159.89.20[.]126</code><td>2026-07-22<td>media<td>DigitalOcean (Fráncfort); certificado con CN brute-ratel-test; puede ser un entorno de pruebas<tr><td>ip<td><code>46.4.195[.]61</code><td>2026-07<td>media<td>Hetzner (Alemania); AlphaSOC lo clasifica como malware<tr><td>dominio<td><code>fe-2.strangled[.]net</code><td>2021-02-18<td>baja<td>DNS pasivo histórico de 159.89.20[.]126; probablemente de un inquilino anterior de la IP<tr><td>hash HTML<td><code>http.html_hash:182674321</code><td>2026-07-24<td>media<td>Hash de Shodan del cuerpo 'Page not found' (14 bytes); solo es útil junto con 200 OK<tr><td>JARM<td><code>3fd21b20d00000021c43d21b21b43d76e1f79b8645e08ae7fa8f07eb5e4202</code><td>2026-07-24<td>baja<td>JARM más frecuente en el clúster (7 de 20); no es exclusivo de Brute Ratel<tr><td>JARM<td><code>3fd3fd20d00000021c43d43d00043d15e5079913504d6ff89229f1f99b095c</code><td>2026-07-24<td>baja<td>Segundo JARM más frecuente (5 de 20); no es exclusivo de Brute Ratel</table></div><p>📥 <a href="/assets/iocs/brute-ratel-c4.csv">Descargar IOCs en CSV</a></p><h2 id="mapeo-mitre-attck"><span class="me-2">Mapeo MITRE ATT&amp;CK</span><a href="#mapeo-mitre-attck" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><div class="table-wrapper"><table><thead><tr><th>Técnica<th>Nombre<th>Fuente<tbody><tr><td><a href="https://attack.mitre.org/techniques/T1588/002/">T1588.002</a><td>Obtain Capabilities: Tool<td>Observado (Brute Ratel C4)<tr><td><a href="https://attack.mitre.org/techniques/T1583/003/">T1583.003</a><td>Acquire Infrastructure: Virtual Private Server<td>Observado (DigitalOcean, Hetzner y otros)<tr><td><a href="https://attack.mitre.org/techniques/T1587/003/">T1587.003</a><td>Develop Capabilities: Digital Certificates<td>Observado (certificados autofirmados, uno suplantando a Microsoft)<tr><td><a href="https://attack.mitre.org/techniques/T1665/">T1665</a><td>Hide Infrastructure<td>Observado (respuesta señuelo “Page not found”)<tr><td><a href="https://attack.mitre.org/techniques/T1071/001/">T1071.001</a><td>Application Layer Protocol: Web Protocols<td>Reportado (ThreatFox, VirusTotal)</table></div><p>“Observado” significa visible en la infraestructura analizada; “Reportado” significa que procede de la fuente indicada y no lo he verificado yo.</p><h2 id="hunting--detección"><span class="me-2">Hunting / detección</span><a href="#hunting--detección" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><h3 id="infraestructura-shodan"><span class="me-2">Infraestructura (Shodan)</span><a href="#infraestructura-shodan" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><p><strong>Consulta de la investigación</strong>, la que dio los 20 resultados:</p><div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14 -org:"Amazon.com, Inc." -org:"Amazon Data Services NoVa" -org:"Amazon Technologies Inc."
-</pre></table></code></div></div><p><strong>Variante sugerida, sin probar</strong>, que descarta solo los balanceadores de AWS y no toda la nube de Amazon. Así se conservarían los servidores de Brute Ratel alojados directamente en instancias de AWS:</p><div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14 -"awselb"
-</pre></table></code></div></div><p><strong>Certificados de los resultados</strong>, combinados con la huella HTTP:</p><div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header"> <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td></tr></tbody></table></code></div></div>
+
+<p><a href="/assets/img/posts/brute-ratel/shodan-20-resultados.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/shodan-20-resultados.webp" alt="Los 20 resultados tras excluir Amazon" width="1547" height="864" loading="lazy"></a>
+<em>20 servidores con la huella: Estados Unidos, Alemania y Países Bajos; sobre todo en el puerto 443</em></p>
+
+<h2 id="hallazgos"><span class="me-2">Hallazgos</span><a href="#hallazgos" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<h3 id="distribución-de-la-infraestructura"><span class="me-2">Distribución de la infraestructura</span><a href="#distribución-de-la-infraestructura" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th>Dimensión</th>
+      <th>Resultado (20 servidores)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Países</td>
+      <td>Estados Unidos (5), Alemania (4), Países Bajos (3), Austria (1), Australia (1)</td>
+    </tr>
+    <tr>
+      <td>Puertos</td>
+      <td>443 (13), 8443 (3), 80 (1), 4433 (1), 8080 (1)</td>
+    </tr>
+    <tr>
+      <td>Proveedor principal</td>
+      <td>DigitalOcean (4)</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>Predominan los <strong>puertos HTTPS</strong> (443, 8443, 4433). Los proveedores son VPS y nubes comerciales: DigitalOcean, Hetzner y proveedores más pequeños.</p>
+
+<h3 id="certificados-tls"><span class="me-2">Certificados TLS</span><a href="#certificados-tls" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>Los certificados de los resultados aportan pistas adicionales:</p>
+
+<div class="table-wrapper"><table class="notranslate" translate="no">
+  <thead>
+    <tr>
+      <th>Servidor</th>
+      <th>Certificado</th>
+      <th>Lectura</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> (DigitalOcean, Fráncfort)</td>
+      <td>Nombre común <strong><code class="language-plaintext highlighter-rouge">brute-ratel-test</code></strong></td>
+      <td>Explícito. Puede ser un entorno de pruebas de un red team o de un investigador</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> (Servers Tech, Ámsterdam)</td>
+      <td>Autofirmado, <strong><code class="language-plaintext highlighter-rouge">LOCALHOST</code></strong>, organización <strong>Microsoft</strong></td>
+      <td>Certificado falso que suplanta a Microsoft</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> (Ante Mediam, Kiev)</td>
+      <td>Organización <strong>Internet Widgits Pty Ltd</strong></td>
+      <td>Valor por defecto de OpenSSL: certificado generado con prisa y sin personalizar</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>No he podido comprobar si alguno de estos certificados es el que Brute Ratel genera por defecto.</p>
+
+<h3 id="corroboración-externa"><span class="me-2">Corroboración externa</span><a href="#corroboración-externa" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<ul>
+  <li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">91.84.111[.]104</code></strong>: 9 de 91 motores lo marcan como malicioso en VirusTotal. <strong>ThreatFox</strong> lo registra como C2 de <strong><code class="language-plaintext highlighter-rouge">brute_ratel</code></strong> en el puerto 8443, unos tres meses antes de esta investigación, y otro usuario de la comunidad lo describe como servidor de C2 de Brute Ratel.</li>
+  <li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">77.88.193[.]134</code></strong>: 0 de 91 detecciones, pero VirusTotal registra <strong>dos ficheros detectados como maliciosos que se comunican con esta IP</strong>, y un comentario de la comunidad lo identifica como C2 de Brute Ratel.</li>
+  <li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">46.4.195[.]61</code></strong> (Hetzner): AlphaSOC lo clasifica como malware.</li>
+  <li><strong><code class="language-plaintext notranslate highlighter-rouge" translate="no">159.89.20[.]126</code></strong>: 0 de 91 detecciones. Su DNS pasivo incluye <code class="language-plaintext highlighter-rouge">fe-2.strangled[.]net</code> (2 de 91, en febrero de 2021), pero cinco años antes de esta observación: lo más probable es que corresponda a un inquilino anterior de la IP.</li>
+</ul>
+
+<p><a href="/assets/img/posts/brute-ratel/vt-91-84-111-104.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/vt-91-84-111-104.webp" alt="ThreatFox registra 91.84.111.104 como C2 de Brute Ratel" width="700" loading="lazy"></a>
+<em>91.84.111[.]104: reportado en ThreatFox como brute_ratel (puerto 8443)</em></p>
+
+<p><a href="/assets/img/posts/brute-ratel/vt-77-88-193-134.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/vt-77-88-193-134.webp" alt="VirusTotal: 77.88.193.134, con ficheros maliciosos que se comunican con la IP" width="1000" loading="lazy"></a>
+<em>77.88.193[.]134: dos ficheros detectados se comunican con la IP; la comunidad lo identifica como C2 de Brute Ratel</em></p>
+
+<h3 id="huellas-jarm"><span class="me-2">Huellas JARM</span><a href="#huellas-jarm" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p>El análisis de facetas de Shodan sobre los 20 resultados muestra <strong>7 huellas JARM distintas</strong>, pero muy concentradas: las dos más frecuentes cubren 12 de los 20 servidores.</p>
+
+<p><a href="/assets/img/posts/brute-ratel/shodan-jarm.webp" class="popup img-link shimmer"><img src="/assets/img/posts/brute-ratel/shodan-jarm.webp" alt="Distribución de huellas JARM en los 20 resultados" width="1000" loading="lazy"></a>
+<em>Siete huellas JARM; las dos primeras agrupan 12 de los 20 servidores</em></p>
+
+<p>JARM resume cómo responde la pila TLS de un servidor, así que la comparten muchas aplicaciones sin relación entre sí. <strong>No sirve como huella por sí sola</strong>, pero puede ayudar a priorizar resultados cuando se combina con la huella HTTP. Con solo 20 resultados, tampoco puede concluirse mucho de su distribución.</p>
+
+<h3 id="cronología"><span class="me-2">Cronología</span><a href="#cronología" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<div class="table-wrapper"><table class="notranslate" translate="no">
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Evento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Finales de 2020</td>
+      <td>Publicación de Brute Ratel C4</td>
+    </tr>
+    <tr>
+      <td>2021-02-18</td>
+      <td><code class="language-plaintext highlighter-rouge">fe-2.strangled[.]net</code> resuelve a <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> (DNS pasivo, probablemente otro inquilino)</td>
+    </tr>
+    <tr>
+      <td>2022-07</td>
+      <td>Unit 42 documenta el uso de Brute Ratel en una campaña con parecidos a APT29</td>
+    </tr>
+    <tr>
+      <td>2022-09</td>
+      <td>Circula en foros de cibercrimen una copia crackeada de Brute Ratel 1.2.2</td>
+    </tr>
+    <tr>
+      <td>~2026-04</td>
+      <td>ThreatFox registra <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> como C2 de brute_ratel</td>
+    </tr>
+    <tr>
+      <td>~2026-05</td>
+      <td>La comunidad de VirusTotal identifica <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code> y <code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> como C2 de Brute Ratel</td>
+    </tr>
+    <tr>
+      <td>2026-07-22 / 23</td>
+      <td>Shodan observa la huella en <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code>, <code class="language-plaintext highlighter-rouge">77.88.193[.]134</code> y <code class="language-plaintext highlighter-rouge">91.84.111[.]104</code></td>
+    </tr>
+    <tr>
+      <td>2026-07-24</td>
+      <td>Cierre de la investigación</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2 id="indicadores"><span class="me-2">Indicadores</span><a href="#indicadores" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<p>Todos los indicadores están <strong>defangeados</strong>. Incluyo las dos huellas JARM más frecuentes con confianza baja: sirven para priorizar resultados, no para bloquear.</p>
+
+<div class="table-wrapper"><table translate="no">
+  <thead><tr><th>Tipo</th><th>Valor</th><th>Primera vez</th><th>Confianza</th><th>Notas</th></tr></thead>
+  <tbody>
+  
+    <tr>
+      <td>ip</td><td><code>185.146.234[.]46</code></td>
+      <td>2026-07</td><td>media</td><td>Punto de pivote inicial; sin registros actuales en Shodan el 24 de julio de 2026</td>
+    </tr>
+  
+    <tr>
+      <td>ip</td><td><code>91.84.111[.]104</code></td>
+      <td>2026-04</td><td>alta</td><td>Servers Tech FZCO (Ámsterdam); ThreatFox: brute_ratel en el puerto 8443; certificado falso LOCALHOST / Microsoft</td>
+    </tr>
+  
+    <tr>
+      <td>ip</td><td><code>77.88.193[.]134</code></td>
+      <td>2026-05</td><td>media</td><td>Ante Mediam LLC (Kiev); comunidad de VirusTotal: C2 de Brute Ratel; 2 ficheros detectados se comunican con la IP</td>
+    </tr>
+  
+    <tr>
+      <td>ip</td><td><code>159.89.20[.]126</code></td>
+      <td>2026-07-22</td><td>media</td><td>DigitalOcean (Fráncfort); certificado con CN brute-ratel-test; puede ser un entorno de pruebas</td>
+    </tr>
+  
+    <tr>
+      <td>ip</td><td><code>46.4.195[.]61</code></td>
+      <td>2026-07</td><td>media</td><td>Hetzner (Alemania); AlphaSOC lo clasifica como malware</td>
+    </tr>
+  
+    <tr>
+      <td>dominio</td><td><code>fe-2.strangled[.]net</code></td>
+      <td>2021-02-18</td><td>baja</td><td>DNS pasivo histórico de 159.89.20[.]126; probablemente de un inquilino anterior de la IP</td>
+    </tr>
+  
+    <tr>
+      <td>hash HTML</td><td><code>http.html_hash:182674321</code></td>
+      <td>2026-07-24</td><td>media</td><td>Hash de Shodan del cuerpo 'Page not found' (14 bytes); solo es útil junto con 200 OK</td>
+    </tr>
+  
+    <tr>
+      <td>JARM</td><td><code>3fd21b20d00000021c43d21b21b43d76e1f79b8645e08ae7fa8f07eb5e4202</code></td>
+      <td>2026-07-24</td><td>baja</td><td>JARM más frecuente en el clúster (7 de 20); no es exclusivo de Brute Ratel</td>
+    </tr>
+  
+    <tr>
+      <td>JARM</td><td><code>3fd3fd20d00000021c43d43d00043d15e5079913504d6ff89229f1f99b095c</code></td>
+      <td>2026-07-24</td><td>baja</td><td>Segundo JARM más frecuente (5 de 20); no es exclusivo de Brute Ratel</td>
+    </tr>
+  
+  </tbody>
+</table></div>
+
+<p>📥 <a href="/assets/iocs/brute-ratel-c4.csv">Descargar IOCs en CSV</a></p>
+
+<h2 id="mapeo-mitre-attck"><span class="me-2">Mapeo MITRE ATT&amp;CK</span><a href="#mapeo-mitre-attck" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th>Técnica</th>
+      <th>Nombre</th>
+      <th>Fuente</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://attack.mitre.org/techniques/T1588/002/">T1588.002</a></td>
+      <td>Obtain Capabilities: Tool</td>
+      <td>Observado (Brute Ratel C4)</td>
+    </tr>
+    <tr>
+      <td><a href="https://attack.mitre.org/techniques/T1583/003/">T1583.003</a></td>
+      <td>Acquire Infrastructure: Virtual Private Server</td>
+      <td>Observado (DigitalOcean, Hetzner y otros)</td>
+    </tr>
+    <tr>
+      <td><a href="https://attack.mitre.org/techniques/T1587/003/">T1587.003</a></td>
+      <td>Develop Capabilities: Digital Certificates</td>
+      <td>Observado (certificados autofirmados, uno suplantando a Microsoft)</td>
+    </tr>
+    <tr>
+      <td><a href="https://attack.mitre.org/techniques/T1665/">T1665</a></td>
+      <td>Hide Infrastructure</td>
+      <td>Observado (respuesta señuelo “Page not found”)</td>
+    </tr>
+    <tr>
+      <td><a href="https://attack.mitre.org/techniques/T1071/001/">T1071.001</a></td>
+      <td>Application Layer Protocol: Web Protocols</td>
+      <td>Reportado (ThreatFox, VirusTotal)</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>“Observado” significa visible en la infraestructura analizada; “Reportado” significa que procede de la fuente indicada y no lo he verificado yo.</p>
+
+<h2 id="hunting--detección"><span class="me-2">Hunting / detección</span><a href="#hunting--detección" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<h3 id="infraestructura-shodan"><span class="me-2">Infraestructura (Shodan)</span><a href="#infraestructura-shodan" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<p><strong>Consulta de la investigación</strong>, la que dio los 20 resultados:</p>
+
+<div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14 -org:"Amazon.com, Inc." -org:"Amazon Data Services NoVa" -org:"Amazon Technologies Inc."
+</pre></td></tr></tbody></table></code></div></div>
+
+<p><strong>Variante sugerida, sin probar</strong>, que descarta solo los balanceadores de AWS y no toda la nube de Amazon. Así se conservarían los servidores de Brute Ratel alojados directamente en instancias de AWS:</p>
+
+<div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre>http.html_hash:182674321 HTTP/1.1 200 OK Content-Type: text/plain; charset=utf-8 Content-Length: 14 -"awselb"
+</pre></td></tr></tbody></table></code></div></div>
+
+<p><strong>Certificados de los resultados</strong>, combinados con la huella HTTP:</p>
+
+<div class="language-text notranslate highlighter-rouge" translate="no"><div class="code-header">
+        <span data-label-text="Text"><i class="fas fa-code fa-fw small"></i></span>
+      <button aria-label="copy" data-title-succeed="Copied!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
 2
-</pre><td class="rouge-code"><pre>http.html_hash:182674321 ssl.cert.subject.cn:"brute-ratel-test"
+</pre></td><td class="rouge-code"><pre>http.html_hash:182674321 ssl.cert.subject.cn:"brute-ratel-test"
 http.html_hash:182674321 ssl.cert.issuer.cn:"LOCALHOST"
-</pre></table></code></div></div><p>La sintaxis de los filtros de Shodan puede variar entre planes; comprueba estas consultas en tu cuenta antes de automatizarlas.</p><h3 id="red-y-endpoint-para-defensores"><span class="me-2">Red y endpoint (para defensores)</span><a href="#red-y-endpoint-para-defensores" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><ul><li><strong>Conexiones salientes</strong> hacia las IPs de la tabla de indicadores en los logs de firewall y proxy, sobre todo hacia los puertos 443 y 8443. Busca patrones periódicos, típicos de un beacon.<li><strong>Detección por comportamiento.</strong> Brute Ratel genera <em>payloads</em> nuevos con facilidad y está diseñado para evadir el antivirus, así que los indicadores estáticos caducan rápido. Tras la filtración de la versión crackeada, varios análisis recomendaron priorizar la detección por comportamiento en el endpoint frente a los IOCs.<li><strong>Si analizas un C2 sospechoso</strong> y recibes un <code class="language-plaintext highlighter-rouge">200 OK</code> con “Page not found”, no lo descartes: es exactamente la respuesta señuelo de este clúster.</ul><h3 id="mitigación"><span class="me-2">Mitigación</span><a href="#mitigación" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3><ul><li><strong>Bloquea los indicadores de confianza alta y media</strong> en el perímetro, revisando antes que no haya tráfico legítimo hacia ellos.<li><strong>Si tu organización contrata ejercicios de red team</strong>, confirma con el equipo responsable si alguna de estas IPs es suya, sobre todo <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> por su certificado <code class="language-plaintext highlighter-rouge">brute-ratel-test</code>.</ul><h2 id="limitaciones-y-nivel-de-confianza"><span class="me-2">Limitaciones y nivel de confianza</span><a href="#limitaciones-y-nivel-de-confianza" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><ul><li><strong>El filtro de Amazon es demasiado amplio.</strong> La consulta final descarta todas las organizaciones de Amazon. El descarte se hizo porque ningún resultado de AWS tenía relación con Brute Ratel en VirusTotal y todos procedían de balanceadores de carga (<code class="language-plaintext highlighter-rouge">Server: awselb/2.0</code>), pero así se pierden también los servidores de Brute Ratel que un operador aloje directamente en instancias de AWS. La variante con <code class="language-plaintext highlighter-rouge">-"awselb"</code> de la sección <em>Hunting</em> debería corregirlo; no la he probado.<li><strong>El origen de la huella procede del ejercicio.</strong> La combinación <code class="language-plaintext highlighter-rouge">200 OK</code> + <code class="language-plaintext highlighter-rouge">text/plain</code> + 14 bytes se tomó como característica de Brute Ratel a partir de la documentación del ejercicio. No he podido confirmar si es la respuesta por defecto de Brute Ratel o una configuración concreta del operador.<li><strong>Brute Ratel no es malware en sí.</strong> Es una herramienta comercial de red team. Algunos de los 20 servidores pueden ser ejercicios autorizados, como sugiere el certificado <code class="language-plaintext highlighter-rouge">brute-ratel-test</code>.<li><strong>Corroboración parcial.</strong> Solo una parte de los 20 servidores tiene reportes externos, y los comentarios de la comunidad de VirusTotal no siempre indican cómo se obtuvieron.<li><strong>Pocos resultados.</strong> Con 20 servidores, las distribuciones de países, proveedores y JARM son poco representativas.<li><strong>Visibilidad parcial.</strong> Shodan solo ve lo que escanea, en los puertos que escanea. Un servidor de Brute Ratel con una respuesta señuelo distinta no aparece con esta huella.<li><strong>Investigación pasiva.</strong> No he interactuado con los servidores más allá de lo que muestran los escáneres públicos.</ul><h2 id="referencias"><span class="me-2">Referencias</span><a href="#referencias" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><ul><li>Shodan, búsquedas por <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code> y por la huella descrita en este artículo<li>VirusTotal, <a href="https://www.virustotal.com/gui/ip-address/91.84.111.104/community">91.84.111.104</a>, <a href="https://www.virustotal.com/gui/ip-address/77.88.193.134/community">77.88.193.134</a>, <a href="https://www.virustotal.com/gui/ip-address/159.89.20.126/relations">159.89.20.126</a> y <a href="https://www.virustotal.com/gui/ip-address/46.4.195.61/detection">46.4.195.61</a><li>ThreatFox (abuse.ch), <a href="https://threatfox.abuse.ch/ioc/1784615/">IOC 1784615</a><li>The Hacker News, <a href="https://thehackernews.com/2022/07/hackers-abusing-brc4-red-team.html">Hackers abusing BRc4 red team penetration tool to evade detection</a>, 6 de julio de 2022<li>Security Affairs, <a href="https://securityaffairs.com/136395/cyber-crime/brute-ratel-cracked-copy.html">A cracked copy of Brute Ratel post-exploitation tool leaked on hacking forums</a>, septiembre de 2022<li>MITRE ATT&amp;CK, <a href="https://attack.mitre.org/techniques/T1588/002/">T1588.002 – Obtain Capabilities: Tool</a> y <a href="https://attack.mitre.org/techniques/T1665/">T1665 – Hide Infrastructure</a></ul></div><div class="post-tail-wrapper text-muted"><div class="d-flex justify-content-between align-items-center gap-3 mb-3"><div class="post-meta"> <i class="far fa-folder-open fa-fw me-1"></i> <a href="/categories/infraestructura/">Infraestructura</a>, <a href="/categories/c2/">C2</a></div></div><div class="post-tags"> <i class="fa fa-tags fa-fw me-1"></i> <a href="/tags/brute-ratel/" class="post-tag no-text-decoration" >brute-ratel</a> <a href="/tags/c2/" class="post-tag no-text-decoration" >c2</a> <a href="/tags/shodan/" class="post-tag no-text-decoration" >shodan</a> <a href="/tags/http-fingerprinting/" class="post-tag no-text-decoration" >http-fingerprinting</a> <a href="/tags/jarm/" class="post-tag no-text-decoration" >jarm</a> <a href="/tags/tls/" class="post-tag no-text-decoration" >tls</a> <a href="/tags/pivoting/" class="post-tag no-text-decoration" >pivoting</a></div><div class=" post-tail-bottom d-flex justify-content-between align-items-center mt-5 pb-2 " ><div class="license-wrapper"> This post is licensed under <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> by the author.</div><div class="share-wrapper d-flex align-items-center"> <span class="share-label text-muted">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes&url=https%3A%2F%2Fjuliospau.github.io%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Twitter" aria-label="Twitter"> <i class="fa-fw fa-brands fa-square-x-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes&u=https%3A%2F%2Fjuliospau.github.io%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Facebook" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://t.me/share/url?url=https%3A%2F%2Fjuliospau.github.io%2Fposts%2FHunting-Brute-Ratel-C4%2F&text=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Telegram" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <a href="https://www.linkedin.com/feed/?shareActive=true&shareUrl=https%3A%2F%2Fjuliospau.github.io%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Linkedin" aria-label="Linkedin"> <i class="fa-fw fab fa-linkedin"></i> </a> <button id="copy-link" aria-label="Copy link" class="btn small" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy link" data-title-succeed="Link copied successfully!" > <i class="fa-fw fas fa-link pe-none fs-6"></i> </button> </span></div></div></div></article></main><aside aria-label="Panel" id="panel-wrapper" class="col-xl-3 ps-2 text-muted"><div class="access"><section id="access-lastmod"><h2 class="panel-heading">Recently Updated</h2><ul class="content list-unstyled ps-0 pb-1 ms-1 mt-2"><li class="text-truncate lh-lg"> <a href="/posts/Hunting-TraderTraitor-mkcert/">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Mythic-C2/">Mythic C2: dos puertos, dos huellas por defecto</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Brute-Ratel-C4/">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-RedGuard-C2-Redirector/">RedGuard: hunting de redirectores de C2 por su configuración por defecto</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Cobalt-Strike-Redirectors/">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</a></ul></section><section><h2 class="panel-heading">Trending Tags</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a> <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a> <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a> <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a> <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a> <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a> <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a> <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a> <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a> <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a></div></section></div><div class="toc-border-cover z-3"></div><section id="toc-wrapper" class="invisible position-sticky ps-0 pe-4 pb-4"><h2 class="panel-heading ps-3 pb-2 mb-0">Contents</h2><nav id="toc"></nav></section></aside></div><div class="row"><div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-md-4"><aside id="related-posts" aria-labelledby="related-label"><h3 class="mb-4" id="related-label">Further Reading</h3><nav class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4"><article class="col"> <a href="/posts/Hunting-RedGuard-C2-Redirector/" class="post-preview card h-100"><div class="card-body"> <time data-ts="1794052800" data-df="ll" > Nov 7, 2026 </time><h4 class="pt-0 my-2">RedGuard: hunting de redirectores de C2 por su configuración por defecto</h4><div class="text-muted"><p>Las opciones por defecto de RedGuard, un redirector de C2 de código abierto, dejan una huella muy precisa: una redirección 307 a 360.net generada por Go y un certificado falso de Alibaba creado en 2022. Con ella aparecen 19 servidores.</p></div></div></a></article><article class="col"> <a href="/posts/Hunting-Mythic-C2/" class="post-preview card h-100"><div class="card-body"> <time data-ts="1794128400" data-df="ll" > Nov 8, 2026 </time><h4 class="pt-0 my-2">Mythic C2: dos puertos, dos huellas por defecto</h4><div class="text-muted"><p>Mythic expone dos caras: el panel del operador en el puerto 7443 y el perfil HTTP al que se conectan los agentes en el 80. Sus valores por defecto dejan una huella en cada una, y la del perfil HTTP encuentra servidores aunque el panel esté oculto.</p></div></div></a></article><article class="col"> <a href="/posts/Hunting-Cobalt-Strike-Redirectors/" class="post-preview card h-100"><div class="card-body"> <time data-ts="1794049200" data-df="ll" > Nov 7, 2026 </time><h4 class="pt-0 my-2">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</h4><div class="text-muted"><p>Cómo una sola respuesta HTTP de un redirector, un 302 a google.com servido por nginx, basta para encontrar un clúster de 21 servidores, algunos ya vinculados a Cobalt Strike y uno escondido detrás de Cloudflare.</p></div></div></a></article></nav></aside><nav class="post-navigation d-flex justify-content-between" aria-label="Post Navigation"> <a href="/posts/Hunting-RedGuard-C2-Redirector/" class="btn btn-outline-primary" aria-label="Older" ><p>RedGuard: hunting de redirectores de C2 por su configuración por defecto</p></a> <a href="/posts/Hunting-Mythic-C2/" class="btn btn-outline-primary" aria-label="Newer" ><p>Mythic C2: dos puertos, dos huellas por defecto</p></a></nav><footer aria-label="Site Info" class=" d-flex flex-column justify-content-center text-muted flex-lg-row justify-content-lg-between align-items-lg-center pb-lg-3 " ><p>© <time>2026</time> <a href="https://github.com/juliospau">admin</a>. <span data-bs-toggle="tooltip" data-bs-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author." >Some rights reserved.</span></p><p>Using the <a data-bs-toggle="tooltip" data-bs-placement="top" title="v7.6.0" href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener" >Chirpy</a> theme for <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>.</p></footer></div></div><div id="search-result-wrapper" class="d-flex justify-content-center d-none"><div class="col-11 content"><div id="search-hints"><section><h2 class="panel-heading">Trending Tags</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a> <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a> <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a> <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a> <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a> <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a> <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a> <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a> <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a> <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a></div></section></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><aside aria-label="Scroll to Top"> <button id="back-to-top" type="button" class="btn btn-lg btn-box-shadow"> <i class="fas fa-angle-up"></i> </button></aside></div><div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div><aside id="notification" class="toast w-auto rounded-5 text-nowrap" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="true" data-bs-autohide="false" ><div class="d-flex align-items-center"><div class="toast-body ps-3">New content available</div><button type="button" class="btn btn-primary btn-sm rounded-2 py-0" aria-label="Update" >Update</button> <button type="button" class="btn-close mx-3 ms-2" data-bs-dismiss="toast" aria-label="Close" ></button></div></aside><script> document.addEventListener('DOMContentLoaded', () => { SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<article class="px-1 px-sm-2 px-lg-4 px-xl-0"><header><h2><a href="{url}">{title}</a></h2><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div></header><p>{content}</p></article>', noResultsText: '<p class="mt-5">Oops! No results found.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="me-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); }); </script>
+</pre></td></tr></tbody></table></code></div></div>
+
+<p>La sintaxis de los filtros de Shodan puede variar entre planes; comprueba estas consultas en tu cuenta antes de automatizarlas.</p>
+
+<h3 id="red-y-endpoint-para-defensores"><span class="me-2">Red y endpoint (para defensores)</span><a href="#red-y-endpoint-para-defensores" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<ul>
+  <li><strong>Conexiones salientes</strong> hacia las IPs de la tabla de indicadores en los logs de firewall y proxy, sobre todo hacia los puertos 443 y 8443. Busca patrones periódicos, típicos de un beacon.</li>
+  <li><strong>Detección por comportamiento.</strong> Brute Ratel genera <em>payloads</em> nuevos con facilidad y está diseñado para evadir el antivirus, así que los indicadores estáticos caducan rápido. Tras la filtración de la versión crackeada, varios análisis recomendaron priorizar la detección por comportamiento en el endpoint frente a los IOCs.</li>
+  <li><strong>Si analizas un C2 sospechoso</strong> y recibes un <code class="language-plaintext highlighter-rouge">200 OK</code> con “Page not found”, no lo descartes: es exactamente la respuesta señuelo de este clúster.</li>
+</ul>
+
+<h3 id="mitigación"><span class="me-2">Mitigación</span><a href="#mitigación" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3>
+
+<ul>
+  <li><strong>Bloquea los indicadores de confianza alta y media</strong> en el perímetro, revisando antes que no haya tráfico legítimo hacia ellos.</li>
+  <li><strong>Si tu organización contrata ejercicios de red team</strong>, confirma con el equipo responsable si alguna de estas IPs es suya, sobre todo <code class="language-plaintext highlighter-rouge">159.89.20[.]126</code> por su certificado <code class="language-plaintext highlighter-rouge">brute-ratel-test</code>.</li>
+</ul>
+
+<h2 id="limitaciones-y-nivel-de-confianza"><span class="me-2">Limitaciones y nivel de confianza</span><a href="#limitaciones-y-nivel-de-confianza" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<ul>
+  <li><strong>El filtro de Amazon es demasiado amplio.</strong> La consulta final descarta todas las organizaciones de Amazon. El descarte se hizo porque ningún resultado de AWS tenía relación con Brute Ratel en VirusTotal y todos procedían de balanceadores de carga (<code class="language-plaintext highlighter-rouge">Server: awselb/2.0</code>), pero así se pierden también los servidores de Brute Ratel que un operador aloje directamente en instancias de AWS. La variante con <code class="language-plaintext highlighter-rouge">-"awselb"</code> de la sección <em>Hunting</em> debería corregirlo; no la he probado.</li>
+  <li><strong>El origen de la huella procede del ejercicio.</strong> La combinación <code class="language-plaintext highlighter-rouge">200 OK</code> + <code class="language-plaintext highlighter-rouge">text/plain</code> + 14 bytes se tomó como característica de Brute Ratel a partir de la documentación del ejercicio. No he podido confirmar si es la respuesta por defecto de Brute Ratel o una configuración concreta del operador.</li>
+  <li><strong>Brute Ratel no es malware en sí.</strong> Es una herramienta comercial de red team. Algunos de los 20 servidores pueden ser ejercicios autorizados, como sugiere el certificado <code class="language-plaintext highlighter-rouge">brute-ratel-test</code>.</li>
+  <li><strong>Corroboración parcial.</strong> Solo una parte de los 20 servidores tiene reportes externos, y los comentarios de la comunidad de VirusTotal no siempre indican cómo se obtuvieron.</li>
+  <li><strong>Pocos resultados.</strong> Con 20 servidores, las distribuciones de países, proveedores y JARM son poco representativas.</li>
+  <li><strong>Visibilidad parcial.</strong> Shodan solo ve lo que escanea, en los puertos que escanea. Un servidor de Brute Ratel con una respuesta señuelo distinta no aparece con esta huella.</li>
+  <li><strong>Investigación pasiva.</strong> No he interactuado con los servidores más allá de lo que muestran los escáneres públicos.</li>
+</ul>
+
+<h2 id="referencias"><span class="me-2">Referencias</span><a href="#referencias" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2>
+
+<ul>
+  <li>Shodan, búsquedas por <code class="language-plaintext highlighter-rouge">http.html_hash:182674321</code> y por la huella descrita en este artículo</li>
+  <li>VirusTotal, <a href="https://www.virustotal.com/gui/ip-address/91.84.111.104/community">91.84.111.104</a>, <a href="https://www.virustotal.com/gui/ip-address/77.88.193.134/community">77.88.193.134</a>, <a href="https://www.virustotal.com/gui/ip-address/159.89.20.126/relations">159.89.20.126</a> y <a href="https://www.virustotal.com/gui/ip-address/46.4.195.61/detection">46.4.195.61</a></li>
+  <li>ThreatFox (abuse.ch), <a href="https://threatfox.abuse.ch/ioc/1784615/">IOC 1784615</a></li>
+  <li>The Hacker News, <a href="https://thehackernews.com/2022/07/hackers-abusing-brc4-red-team.html">Hackers abusing BRc4 red team penetration tool to evade detection</a>, 6 de julio de 2022</li>
+  <li>Security Affairs, <a href="https://securityaffairs.com/136395/cyber-crime/brute-ratel-cracked-copy.html">A cracked copy of Brute Ratel post-exploitation tool leaked on hacking forums</a>, septiembre de 2022</li>
+  <li>MITRE ATT&amp;CK, <a href="https://attack.mitre.org/techniques/T1588/002/">T1588.002 – Obtain Capabilities: Tool</a> y <a href="https://attack.mitre.org/techniques/T1665/">T1665 – Hide Infrastructure</a></li>
+</ul>
+
+  </div>
+
+  <div class="post-tail-wrapper text-muted">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+      <!-- categories -->
+      
+        <div class="post-meta">
+          <i class="far fa-folder-open fa-fw me-1"></i>
+          
+            <a href="/categories/infraestructura/">Infraestructura</a>,
+            <a href="/categories/c2/">C2</a>
+        </div>
+      
+
+      <!-- "Edit this post" link -->
+      <!-- Link to edit the post to contribute. -->
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <!-- tags -->
+    
+      <div class="post-tags">
+        <i class="fa fa-tags fa-fw me-1"></i>
+        
+          <a
+            href="/tags/brute-ratel/"
+            class="post-tag no-text-decoration"
+          >brute-ratel</a>
+        
+          <a
+            href="/tags/c2/"
+            class="post-tag no-text-decoration"
+          >c2</a>
+        
+          <a
+            href="/tags/shodan/"
+            class="post-tag no-text-decoration"
+          >shodan</a>
+        
+          <a
+            href="/tags/http-fingerprinting/"
+            class="post-tag no-text-decoration"
+          >http-fingerprinting</a>
+        
+          <a
+            href="/tags/jarm/"
+            class="post-tag no-text-decoration"
+          >jarm</a>
+        
+          <a
+            href="/tags/tls/"
+            class="post-tag no-text-decoration"
+          >tls</a>
+        
+          <a
+            href="/tags/pivoting/"
+            class="post-tag no-text-decoration"
+          >pivoting</a>
+        
+      </div>
+    
+
+    <div
+      class="
+        post-tail-bottom
+        d-flex justify-content-between align-items-center mt-5 pb-2
+      "
+    >
+      <div class="license-wrapper">
+        
+          
+
+          This post is licensed under 
+        <a href="https://creativecommons.org/licenses/by/4.0/">
+          CC BY 4.0
+        </a>
+         by the author.
+        
+      </div>
+
+      <!-- Post sharing snippet -->
+
+<div class="share-wrapper d-flex align-items-center">
+  <span class="share-label text-muted">Share</span>
+  <span class="share-icons">
+    
+    
+    
+
+    
+
+      
+
+      <a href="https://twitter.com/intent/tweet?text=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes&url=http%3A%2F%2Flocalhost%3A4000%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Twitter" aria-label="Twitter">
+        <i class="fa-fw fa-brands fa-square-x-twitter"></i>
+      </a>
+    
+
+      
+
+      <a href="https://www.facebook.com/sharer/sharer.php?title=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes&u=http%3A%2F%2Flocalhost%3A4000%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Facebook" aria-label="Facebook">
+        <i class="fa-fw fab fa-facebook-square"></i>
+      </a>
+    
+
+      
+
+      <a href="https://t.me/share/url?url=http%3A%2F%2Flocalhost%3A4000%2Fposts%2FHunting-Brute-Ratel-C4%2F&text=Brute%20Ratel%20C4:%20cazando%20servidores%20que%20responden%20%C2%AB200%20OK%C2%BB%20a%20una%20p%C3%A1gina%20no%20encontrada%20-%20Adversary's%20Notes" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Telegram" aria-label="Telegram">
+        <i class="fa-fw fab fa-telegram"></i>
+      </a>
+    
+
+      
+
+      <a href="https://www.linkedin.com/feed/?shareActive=true&shareUrl=http%3A%2F%2Flocalhost%3A4000%2Fposts%2FHunting-Brute-Ratel-C4%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Linkedin" aria-label="Linkedin">
+        <i class="fa-fw fab fa-linkedin"></i>
+      </a>
+    
+
+    <button
+      id="copy-link"
+      aria-label="Copy link"
+      class="btn small"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      title="Copy link"
+      data-title-succeed="Link copied successfully!"
+    >
+      <i class="fa-fw fas fa-link pe-none fs-6"></i>
+    </button>
+  </span>
+</div>
+
+    </div>
+    <!-- .post-tail-bottom -->
+  </div>
+  <!-- div.post-tail-wrapper -->
+</article>
+
+
+            
+          </main>
+
+          <!-- panel -->
+          <aside aria-label="Panel" id="panel-wrapper" class="col-xl-3 ps-2 text-muted">
+            <div class="access">
+              <!-- Get 5 last posted/updated posts -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <section id="access-lastmod">
+    <h2 class="panel-heading">Recently Updated</h2>
+    <ul class="content list-unstyled ps-0 pb-1 ms-1 mt-2">
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-RedGuard-C2-Redirector/">RedGuard: hunting de redirectores de C2 por su configuración por defecto</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-TraderTraitor-mkcert/">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Mythic-C2/">Mythic C2: dos puertos, dos huellas por defecto</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Brute-Ratel-C4/">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Cobalt-Strike-Redirectors/">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</a>
+        </li>
+      
+    </ul>
+  </section>
+  <!-- #access-lastmod -->
+
+
+              <!-- The trending tags list -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+
+
+  <section>
+    <h2 class="panel-heading">Trending Tags</h2>
+    <div class="d-flex flex-wrap mt-3 mb-1 me-3">
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a>
+      
+    </div>
+  </section>
+
+
+            </div>
+
+            
+              
+              
+
+
+
+
+
+
+  <div class="toc-border-cover z-3"></div>
+  <section id="toc-wrapper" class="invisible position-sticky ps-0 pe-4 pb-4">
+    <h2 class="panel-heading ps-3 pb-2 mb-0">Contents</h2>
+    <nav id="toc"></nav>
+  </section>
+
+
+            
+          </aside>
+        </div>
+
+        <div class="row">
+          <!-- tail -->
+          <div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-md-4">
+            
+              
+              <!-- Recommend the other 3 posts according to the tags and categories of the current post. -->
+
+<!-- The total size of related posts -->
+
+
+<!-- An random integer that bigger than 0 -->
+
+
+<!-- Equals to TAG_SCORE / {max_categories_hierarchy} -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  <aside id="related-posts" aria-labelledby="related-label">
+    <h3 class="mb-4" id="related-label">Further Reading</h3>
+    <nav class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">
+      
+        <article class="col">
+          <a href="/posts/Hunting-RedGuard-C2-Redirector/" class="post-preview card h-100">
+            <div class="card-body">
+              <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794052800"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+              <h4 class="pt-0 my-2">RedGuard: hunting de redirectores de C2 por su configuración por defecto</h4>
+              <div class="text-muted">
+                <p>Las opciones por defecto de RedGuard, un redirector de C2 de código abierto, dejan una huella muy precisa: una redirección 307 a 360.net generada por Go y un certificado falso de Alibaba creado en 2022. Con ella aparecen 19 servidores.</p>
+              </div>
+            </div>
+          </a>
+        </article>
+      
+        <article class="col">
+          <a href="/posts/Hunting-Mythic-C2/" class="post-preview card h-100">
+            <div class="card-body">
+              <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794128400"
+  data-df="ll"
+  
+>
+  Nov  8, 2026
+</time>
+
+              <h4 class="pt-0 my-2">Mythic C2: dos puertos, dos huellas por defecto</h4>
+              <div class="text-muted">
+                <p>Mythic expone dos caras: el panel del operador en el puerto 7443 y el perfil HTTP al que se conectan los agentes en el 80. Sus valores por defecto dejan una huella en cada una, y la del perfil HTTP encuentra servidores aunque el panel esté oculto.</p>
+              </div>
+            </div>
+          </a>
+        </article>
+      
+        <article class="col">
+          <a href="/posts/Hunting-Cobalt-Strike-Redirectors/" class="post-preview card h-100">
+            <div class="card-body">
+              <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794049200"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+              <h4 class="pt-0 my-2">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</h4>
+              <div class="text-muted">
+                <p>Cómo una sola respuesta HTTP de un redirector, un 302 a google.com servido por nginx, basta para encontrar un clúster de 21 servidores, algunos ya vinculados a Cobalt Strike y uno escondido detrás de Cloudflare.</p>
+              </div>
+            </div>
+          </a>
+        </article>
+      
+    </nav>
+  </aside>
+  <!-- #related-posts -->
+
+
+            
+              
+              <!-- Navigation buttons at the bottom of the post. -->
+
+<nav class="post-navigation d-flex justify-content-between" aria-label="Post Navigation">
+  
+  
+
+  
+    <a
+      href="/posts/Hunting-RedGuard-C2-Redirector/"
+      class="btn btn-outline-primary"
+      aria-label="Older"
+    >
+      <p>RedGuard: hunting de redirectores de C2 por su configuración por defecto</p>
+    </a>
+  
+
+  
+    <a
+      href="/posts/Hunting-Mythic-C2/"
+      class="btn btn-outline-primary"
+      aria-label="Newer"
+    >
+      <p>Mythic C2: dos puertos, dos huellas por defecto</p>
+    </a>
+  
+</nav>
+
+            
+
+            <!-- The Footer -->
+
+<footer
+  aria-label="Site Info"
+  class="
+    d-flex flex-column justify-content-center text-muted
+    flex-lg-row justify-content-lg-between align-items-lg-center pb-lg-3
+  "
+>
+  <p>©
+    <time>2026</time>
+
+    
+      <a href="https://github.com/juliospau">admin</a>.
+    
+
+    
+      <span
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author."
+      >Some rights reserved.</span>
+    
+  </p>
+
+  <p>Using the <a
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="v7.6.0"
+        href="https://github.com/cotes2020/jekyll-theme-chirpy"
+        target="_blank"
+        rel="noopener"
+      >Chirpy</a> theme for <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>.
+  </p>
+</footer>
+
+          </div>
+        </div>
+
+        <!-- The Search results -->
+
+<div id="search-result-wrapper" class="d-flex justify-content-center d-none">
+  <div class="col-11 content">
+    <div id="search-hints">
+      <!-- The trending tags list -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+
+
+  <section>
+    <h2 class="panel-heading">Trending Tags</h2>
+    <div class="d-flex flex-wrap mt-3 mb-1 me-3">
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a>
+      
+    </div>
+  </section>
+
+
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+      </div>
+
+      <aside aria-label="Scroll to Top">
+        <button id="back-to-top" type="button" class="btn btn-lg btn-box-shadow">
+          <i class="fas fa-angle-up"></i>
+        </button>
+      </aside>
+    </div>
+
+    <div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div>
+
+    
+      <aside
+  id="notification"
+  class="toast w-auto rounded-5 text-nowrap"
+  role="alert"
+  aria-live="assertive"
+  aria-atomic="true"
+  data-bs-animation="true"
+  data-bs-autohide="false"
+>
+  <div class="d-flex align-items-center">
+    <div class="toast-body ps-3">New content available</div>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm rounded-2 py-0"
+      aria-label="Update"
+    >Update</button>
+    <button
+      type="button"
+      class="btn-close mx-3 ms-2"
+      data-bs-dismiss="toast"
+      aria-label="Close"
+    ></button>
+  </div>
+</aside>
+
+    
+
+    <!-- Embedded scripts -->
+
+    
+      
+      <!-- The comments switcher -->
+
+
+    
+
+    <!--
+  Jekyll Simple Search loader
+  See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+
+
+<script>
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    SimpleJekyllSearch({
+      searchInput: document.getElementById('search-input'),
+      resultsContainer: document.getElementById('search-results'),
+      json: '/assets/js/data/search.json',
+      searchResultTemplate: '  <article class="px-1 px-sm-2 px-lg-4 px-xl-0">    <header>      <h2><a href="{url}">{title}</a></h2>      <div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">        {categories}        {tags}      </div>    </header>    <p>{content}</p>  </article>',
+      noResultsText: '<p class="mt-5">Oops! No results found.</p>',
+      templateMiddleware: function(prop, value, template) {
+        if (prop === 'categories') {
+          if (value === '') {
+            return `${value}`;
+          } else {
+            return `<div class="me-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+          }
+        }
+
+        if (prop === 'tags') {
+          if (value === '') {
+            return `${value}`;
+          } else {
+            return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`;
+          }
+        }
+      }
+    });
+  });
+</script>
+
+  </body>
+</html>
+

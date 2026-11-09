@@ -1,1 +1,3124 @@
-<!doctype html><html lang="es"data-bs-theme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e"><meta name="viewport" content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover" ><meta name="generator" content="Jekyll v4.4.1" /><meta property="og:title" content="Adversary’s Notes" /><meta property="og:locale" content="es" /><meta name="description" content="Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling" /><meta name="twitter:description" property="og:description" content="Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling" /><link rel="canonical" href="https://juliospau.github.io/" /><meta property="og:url" content="https://juliospau.github.io/" /><meta property="og:site_name" content="Adversary’s Notes" /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary" /><meta name="twitter:title" content="Adversary’s Notes" /><meta name="twitter:site" content="@" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"WebSite","description":"Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling","headline":"Adversary’s Notes","name":"admin","sameAs":["https://github.com/juliospau"],"url":"https://juliospau.github.io/"}</script><title>Adversary's Notes</title><link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png" sizes="96x96"><link rel="icon" type="image/svg+xml" href="/assets/img/favicons/favicon.svg"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com" ><link rel="dns-prefetch" href="https://fonts.googleapis.com" ><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="dns-prefetch" href="https://fonts.gstatic.com" ><link rel="preconnect" href="https://cdn.jsdelivr.net" ><link rel="dns-prefetch" href="https://cdn.jsdelivr.net" ><link rel="stylesheet" href="/assets/css/jekyll-theme-chirpy.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Source+Sans+Pro:wght@400;600;700;900&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.min.css"> <script src="/assets/js/dist/theme.min.js"></script> <script defer src="https://cdn.jsdelivr.net/combine/npm/simple-jekyll-search@1/dest/simple-jekyll-search.min.js,npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.umd.min.js,npm/dayjs@1/dayjs.min.js,npm/dayjs@1/locale/en.js,npm/dayjs@1/plugin/relativeTime.js,npm/dayjs@1/plugin/localizedFormat.js"></script> <script defer src="/assets/js/dist/home.min.js"></script> <script defer src="/app.min.js?baseurl=&register=true" ></script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=VT323&display=swap" ><body><aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end"><header class="profile-wrapper"> <a href="/" id="avatar" class="rounded-circle"></a> <a class="site-title d-block" href="/">Adversary's Notes</a><p class="site-subtitle fst-italic mb-0">APTs & Infrastructure Hunting</p></header><nav class="flex-column flex-grow-1 w-100 ps-0"><ul class="nav"><li class="nav-item active"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream"></i> <span>CATEGORIES</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive"></i> <span>ARCHIVES</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info-circle"></i> <span>ABOUT</span> </a></ul></nav><div class="sidebar-bottom d-flex flex-wrap align-items-center w-100"> <a href="/feed.xml" aria-label="rss" > <i class="fas fa-rss"></i> </a></div></aside><div id="main-wrapper" class="d-flex justify-content-center"><div class="container d-flex flex-column px-xxl-5"><header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar"><div id="topbar" class="d-flex align-items-center justify-content-between px-lg-3 h-100" > <a class="an-brand notranslate" translate="no" href="/" aria-label="Adversary's Notes"> <span class="an-prompt">$&nbsp;</span>Adversary's Notes<span class="an-cursor" aria-hidden="true"></span> </a><nav id="topnav" aria-label="Navegación principal"> <a href="/" class="active" aria-current="page">home</a> <a href="/categories/">categories</a> <a href="/tags/">tags</a> <a href="/archives/">archives</a> <a href="/about/">about</a></nav><button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar"> <i class="fas fa-bars fa-fw"></i> </button><div id="topbar-title"> Adversary's Notes</div><button type="button" id="search-trigger" class="btn btn-link" aria-label="Search"> <i class="fas fa-search fa-fw"></i> </button> <search id="search" class="align-items-center ms-3 ms-lg-0"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="grep..." > </search> <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">Cancel</button></div></header><div class="row flex-grow-1"><main aria-label="Main Content" class="col-12 col-lg-11 col-xl-9 px-md-4"><div id="post-list" class="flex-grow-1 px-xl-1"><article class="card-wrapper card"> <a href="/posts/Hunting-TraderTraitor-mkcert/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/tradertraitor/portada.webp" alt="TraderTraitor: proveedor falso de Terraform y robo de criptomonedas" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</h1><div class="card-text content mt-0 mb-3"><p>Partiendo de los indicadores de Michael Koczwara y de Hive Pro, el enriquecimiento de certificados, IPs y dominios revela tres operadores que firman con la misma CA, el servidor oculto tras un C2 de FLATROOF y dos servidores ligados al robo de 292 millones a KelpDAO.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794157200" data-df="ll" > Nov 8, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, APT </span></div></div></div></div></a></article><article class="card-wrapper card"> <a href="/posts/Hunting-Mythic-C2/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/mythic/portada.webp" alt="Mythic C2: el panel en el puerto 7443 y el perfil HTTP en el 80" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">Mythic C2: dos puertos, dos huellas por defecto</h1><div class="card-text content mt-0 mb-3"><p>Mythic expone dos caras: el panel del operador en el puerto 7443 y el perfil HTTP al que se conectan los agentes en el 80. Sus valores por defecto dejan una huella en cada una, y la del perfil HTTP encuentra servidores aunque el panel esté oculto.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794128400" data-df="ll" > Nov 8, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, C2 </span></div></div></div></div></a></article><article class="card-wrapper card"> <a href="/posts/Hunting-Brute-Ratel-C4/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/brute-ratel/portada.webp" alt="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</h1><div class="card-text content mt-0 mb-3"><p>Un servidor que dice "Page not found" pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794056400" data-df="ll" > Nov 7, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, C2 </span></div></div></div></div></a></article><article class="card-wrapper card"> <a href="/posts/Hunting-RedGuard-C2-Redirector/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/redguard/redguard-esquema.webp" alt="Servidores RedGuard con la configuración por defecto en Shodan" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">RedGuard: hunting de redirectores de C2 por su configuración por defecto</h1><div class="card-text content mt-0 mb-3"><p>Las opciones por defecto de RedGuard, un redirector de C2 de código abierto, dejan una huella muy precisa: una redirección 307 a 360.net generada por Go y un certificado falso de Alibaba creado en 2022. Con ella aparecen 19 servidores.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794052800" data-df="ll" > Nov 7, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, C2 </span></div></div></div></div></a></article><article class="card-wrapper card"> <a href="/posts/Hunting-Cobalt-Strike-Redirectors/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/cs-redirectors/shodan-resultados.webp" alt="Resultados en Shodan de la huella HTTP del redirector" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</h1><div class="card-text content mt-0 mb-3"><p>Cómo una sola respuesta HTTP de un redirector, un 302 a google.com servido por nginx, basta para encontrar un clúster de 21 servidores, algunos ya vinculados a Cobalt Strike y uno escondido detrás de Cloudflare.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794049200" data-df="ll" > Nov 7, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, C2 </span></div></div></div></div></a></article><article class="card-wrapper card"> <a href="/posts/Hunting-Device-Code-Phishing-N0va-Infra/" class="post-preview row g-0 flex-md-row-reverse"><div class="col-md-5"><div class="preview-img shimmer"><img src="/assets/img/posts/n0va/senuelo-microsoft.webp" alt="Señuelo de N0va que suplanta la verificación de cuenta de Microsoft" loading="lazy"></div></div><div class="col-md-7"><div class="card-body d-flex flex-column"><h1 class="card-title my-2 mt-md-0">N0va: Hunting de la infraestructura de un phishing kit de device code en workers.dev y Linode</h1><div class="card-text content mt-0 mb-3"><p>Pivotando desde un único dominio de workers.dev hasta unas 1.000 páginas de device code phishing en Cloudflare Workers, Pages y Linode Object Storage.</p></div><div class="post-meta flex-grow-1 d-flex align-items-end"><div class="me-auto"> <i class="far fa-calendar fa-fw me-1"></i> <time data-ts="1794038400" data-df="ll" > Nov 7, 2026 </time> <i class="far fa-folder-open fa-fw me-1"></i> <span class="categories"> Infraestructura, Phishing </span></div></div></div></div></a></article></div></main><aside aria-label="Panel" id="panel-wrapper" class="col-xl-3 ps-2 text-muted"><div class="access"><section id="access-lastmod"><h2 class="panel-heading">Recently Updated</h2><ul class="content list-unstyled ps-0 pb-1 ms-1 mt-2"><li class="text-truncate lh-lg"> <a href="/posts/Hunting-TraderTraitor-mkcert/">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Mythic-C2/">Mythic C2: dos puertos, dos huellas por defecto</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Brute-Ratel-C4/">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-RedGuard-C2-Redirector/">RedGuard: hunting de redirectores de C2 por su configuración por defecto</a><li class="text-truncate lh-lg"> <a href="/posts/Hunting-Cobalt-Strike-Redirectors/">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</a></ul></section><section><h2 class="panel-heading">Trending Tags</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a> <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a> <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a> <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a> <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a> <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a> <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a> <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a> <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a> <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a></div></section></div></aside></div><div class="row"><div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-md-4"><footer aria-label="Site Info" class=" d-flex flex-column justify-content-center text-muted flex-lg-row justify-content-lg-between align-items-lg-center pb-lg-3 " ><p>© <time>2026</time> <a href="https://github.com/juliospau">admin</a>. <span data-bs-toggle="tooltip" data-bs-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author." >Some rights reserved.</span></p><p>Using the <a data-bs-toggle="tooltip" data-bs-placement="top" title="v7.6.0" href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener" >Chirpy</a> theme for <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>.</p></footer></div></div><div id="search-result-wrapper" class="d-flex justify-content-center d-none"><div class="col-11 content"><div id="search-hints"><section><h2 class="panel-heading">Trending Tags</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a> <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a> <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a> <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a> <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a> <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a> <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a> <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a> <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a> <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a></div></section></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><aside aria-label="Scroll to Top"> <button id="back-to-top" type="button" class="btn btn-lg btn-box-shadow"> <i class="fas fa-angle-up"></i> </button></aside></div><div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div><aside id="notification" class="toast w-auto rounded-5 text-nowrap" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="true" data-bs-autohide="false" ><div class="d-flex align-items-center"><div class="toast-body ps-3">New content available</div><button type="button" class="btn btn-primary btn-sm rounded-2 py-0" aria-label="Update" >Update</button> <button type="button" class="btn-close mx-3 ms-2" data-bs-dismiss="toast" aria-label="Close" ></button></div></aside><script> document.addEventListener('DOMContentLoaded', () => { SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<article class="px-1 px-sm-2 px-lg-4 px-xl-0"><header><h2><a href="{url}">{title}</a></h2><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div></header><p>{content}</p></article>', noResultsText: '<p class="mt-5">Oops! No results found.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="me-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); }); </script>
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- `site.alt_lang` can specify a language different from the UI -->
+<html
+  lang="es"data-bs-theme="dark">
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e">
+  <meta
+    name="viewport"
+    content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+  ><!-- Setup Open Graph image -->
+
+  
+
+  <!-- Begin Jekyll SEO tag v2.9.1 -->
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Adversary’s Notes" />
+<meta property="og:locale" content="es" />
+<meta name="description" content="Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling" />
+<meta name="twitter:description" property="og:description" content="Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling" />
+<link rel="canonical" href="http://localhost:4000/" />
+<meta property="og:url" content="http://localhost:4000/" />
+<meta property="og:site_name" content="Adversary’s Notes" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Adversary’s Notes" />
+<meta name="twitter:site" content="@" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Adversary Infrastructure Analysis, pivoting, C2 tracking and APT groups profiling","headline":"Adversary’s Notes","name":"admin","sameAs":["https://github.com/juliospau"],"url":"http://localhost:4000/"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  <title>Adversary's Notes</title>
+
+  <!--
+  The Favicons for Web, Android, Microsoft, and iOS (iPhone and iPad) Apps
+  Generated by: https://realfavicongenerator.net/
+-->
+
+
+
+<link rel="icon" type="image/png" href="/assets/img/favicons/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicons/favicon.svg">
+<link rel="shortcut icon" href="/assets/img/favicons/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png">
+
+  <link rel="manifest" href="/assets/img/favicons/site.webmanifest">
+
+
+
+  <!-- Resource Hints -->
+  
+    
+      
+        <link rel="preconnect" href="https://fonts.googleapis.com" >
+      
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" >
+      
+    
+      
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" >
+      
+    
+      
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" >
+      
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" >
+      
+    
+  
+
+  <!-- Bootstrap -->
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+  
+
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/assets/css/jekyll-theme-chirpy.css">
+
+  <!-- Web Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Source+Sans+Pro:wght@400;600;700;900&display=swap">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7/css/all.min.css">
+
+  <!-- 3rd-party Dependencies -->
+
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.min.css">
+  
+
+  
+
+  <!-- Scripts -->
+
+  <script src="/assets/js/dist/theme.min.js"></script>
+
+  <!-- JS selector for site. -->
+
+<!-- commons -->
+
+
+
+<!-- layout specified -->
+
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+  
+    
+
+    
+
+  
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/combine/npm/simple-jekyll-search@1/dest/simple-jekyll-search.min.js,npm/loading-attribute-polyfill@2/dist/loading-attribute-polyfill.umd.min.js,npm/dayjs@1/dayjs.min.js,npm/dayjs@1/locale/en.js,npm/dayjs@1/plugin/relativeTime.js,npm/dayjs@1/plugin/localizedFormat.js"></script>
+
+
+
+
+
+
+
+<script defer src="/assets/js/dist/home.min.js"></script>
+
+
+
+<!-- Pageviews -->
+
+
+
+  
+
+  <!-- Fuentes del skin: IBM Plex (texto y títulos) y VT323 (marca) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=VT323&display=swap"
+>
+<div class="gtranslate_wrapper"></div>
+<script>window.gtranslateSettings = {"default_language":"es","languages":["es","en"],"wrapper_selector":".gtranslate_wrapper"}</script>
+<script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+
+</head>
+
+
+  <body>
+    <!-- The Side Bar -->
+
+<aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end">
+  <header class="profile-wrapper">
+    <a href="/" id="avatar" class="rounded-circle"></a>
+
+    <a class="site-title d-block" href="/">Adversary's Notes</a>
+    <p class="site-subtitle fst-italic mb-0">APTs & Infrastructure Hunting</p>
+  </header>
+  <!-- .profile-wrapper -->
+
+  <nav class="flex-column flex-grow-1 w-100 ps-0">
+    <ul class="nav">
+      <!-- home -->
+      <li class="nav-item active">
+        <a href="/" class="nav-link">
+          <i class="fa-fw fas fa-home"></i>
+          <span>HOME</span>
+        </a>
+      </li>
+      <!-- the real tabs -->
+      
+        <li class="nav-item">
+          <a href="/categories/" class="nav-link">
+            <i class="fa-fw fas fa-stream"></i>
+            
+
+            <span>CATEGORIES</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/tags/" class="nav-link">
+            <i class="fa-fw fas fa-tags"></i>
+            
+
+            <span>TAGS</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/archives/" class="nav-link">
+            <i class="fa-fw fas fa-archive"></i>
+            
+
+            <span>ARCHIVES</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+        <li class="nav-item">
+          <a href="/about/" class="nav-link">
+            <i class="fa-fw fas fa-info-circle"></i>
+            
+
+            <span>ABOUT</span>
+          </a>
+        </li>
+        <!-- .nav-item -->
+      
+    </ul>
+  </nav>
+
+  <div class="sidebar-bottom d-flex flex-wrap align-items-center w-100">
+    
+
+    
+          
+        
+
+      
+        <a
+          href="/feed.xml"
+          aria-label="rss"
+          
+
+          
+
+          
+
+          
+        >
+          <i class="fas fa-rss"></i>
+        </a>
+      
+    
+  </div>
+  <!-- .sidebar-bottom -->
+</aside>
+<!-- #sidebar -->
+
+
+    <div id="main-wrapper" class="d-flex justify-content-center">
+      <div class="container d-flex flex-column px-xxl-5">
+        <!-- The Top Bar (override: navegación horizontal en escritorio, sin barra lateral) -->
+
+<header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar">
+  <div
+    id="topbar"
+    class="d-flex align-items-center justify-content-between px-lg-3 h-100"
+  >
+    <!-- Marca + navegación (solo escritorio) -->
+    <a class="an-brand notranslate" translate="no" href="/" aria-label="Adversary's Notes">
+      <span class="an-prompt">$&nbsp;</span>Adversary's Notes<span class="an-cursor" aria-hidden="true"></span>
+    </a>
+
+    <nav id="topnav" aria-label="Navegación principal">
+      <a href="/" class="active" aria-current="page">home</a>
+      
+        
+        <a href="/categories/">categories</a>
+      
+        
+        <a href="/tags/">tags</a>
+      
+        
+        <a href="/archives/">archives</a>
+      
+        
+        <a href="/about/">about</a>
+      
+    </nav>
+
+    <!-- Lo siguiente es el comportamiento original de Chirpy (móvil + búsqueda) -->
+    <button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar">
+      <i class="fas fa-bars fa-fw"></i>
+    </button>
+
+    <div id="topbar-title">
+      Adversary's Notes
+    </div>
+
+    <button type="button" id="search-trigger" class="btn btn-link" aria-label="Search">
+      <i class="fas fa-search fa-fw"></i>
+    </button>
+
+    <search id="search" class="align-items-center ms-3 ms-lg-0">
+      <i class="fas fa-search fa-fw"></i>
+      <input
+        class="form-control"
+        id="search-input"
+        type="search"
+        aria-label="search"
+        autocomplete="off"
+        placeholder="grep..."
+      >
+    </search>
+    <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">Cancel</button>
+  </div>
+</header>
+
+
+        <div class="row flex-grow-1">
+          <main aria-label="Main Content" class="col-12 col-lg-11 col-xl-9 px-md-4">
+            
+              <!-- Refactor the HTML structure -->
+
+
+
+<!--
+  In order to allow a wide table to scroll horizontally,
+  we suround the markdown table with `<div class="table-wrapper">` and `</div>`
+-->
+
+
+
+<!--
+  Fixed kramdown code highlight rendering:
+  https://github.com/penibelst/jekyll-compress-html/issues/101
+  https://github.com/penibelst/jekyll-compress-html/issues/71#issuecomment-188144901
+-->
+
+
+
+<!-- Change the icon of checkbox -->
+
+
+
+<!-- Handle images -->
+
+
+
+
+  
+  
+
+  
+    
+      
+      
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+    
+
+    
+      
+
+      
+      
+      
+
+      
+    
+      
+
+      
+      
+      
+
+      
+    
+
+    <!-- take out classes -->
+    
+
+    
+
+    
+    
+
+    
+
+    
+      
+    
+
+    <!-- lazy-load images -->
+    
+
+    
+      <!-- create the image wrapper -->
+      
+
+      
+      
+
+    
+
+    <!-- combine -->
+    
+  
+
+  
+
+
+<!-- Add header for code snippets -->
+
+
+
+<!-- Create heading anchors -->
+
+
+
+
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+
+
+
+<!-- return -->
+
+
+
+
+
+
+
+
+
+<!-- Get pinned posts on current page -->
+
+
+
+
+
+
+<!-- Get normal posts on current page -->
+
+
+
+
+
+<div id="post-list" class="flex-grow-1 px-xl-1">
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-TraderTraitor-mkcert/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/tradertraitor/portada.webp" alt="TraderTraitor: proveedor falso de Terraform y robo de criptomonedas"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Partiendo de los indicadores de Michael Koczwara y de Hive Pro, el enriquecimiento de certificados, IPs y dominios revela tres operadores que firman con la misma CA, el servidor oculto tras un C2 de FLATROOF y dos servidores ligados al robo de 292 millones a KelpDAO.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794157200"
+  data-df="ll"
+  
+>
+  Nov  8, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      APT
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-Mythic-C2/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/mythic/portada.webp" alt="Mythic C2: el panel en el puerto 7443 y el perfil HTTP en el 80"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">Mythic C2: dos puertos, dos huellas por defecto</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Mythic expone dos caras: el panel del operador en el puerto 7443 y el perfil HTTP al que se conectan los agentes en el 80. Sus valores por defecto dejan una huella en cada una, y la del perfil HTTP encuentra servidores aunque el panel esté oculto.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794128400"
+  data-df="ll"
+  
+>
+  Nov  8, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      C2
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-Brute-Ratel-C4/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/brute-ratel/portada.webp" alt="Brute Ratel C4: un servidor responde 200 OK con el texto Page not found"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Un servidor que dice "Page not found" pero responde 200 OK. A partir de esa contradicción, y descartando los balanceadores de AWS, aparecen 20 servidores compatibles con Brute Ratel C4, varios ya reportados como C2.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794056400"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      C2
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-RedGuard-C2-Redirector/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/redguard/redguard-esquema.webp" alt="Servidores RedGuard con la configuración por defecto en Shodan"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">RedGuard: hunting de redirectores de C2 por su configuración por defecto</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Las opciones por defecto de RedGuard, un redirector de C2 de código abierto, dejan una huella muy precisa: una redirección 307 a 360.net generada por Go y un certificado falso de Alibaba creado en 2022. Con ella aparecen 19 servidores.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794052800"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      C2
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-Cobalt-Strike-Redirectors/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/cs-redirectors/shodan-resultados.webp" alt="Resultados en Shodan de la huella HTTP del redirector"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Cómo una sola respuesta HTTP de un redirector, un 302 a google.com servido por nginx, basta para encontrar un clúster de 21 servidores, algunos ya vinculados a Cobalt Strike y uno escondido detrás de Cloudflare.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794049200"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      C2
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+    <article class="card-wrapper card">
+      <a href="/posts/Hunting-Device-Code-Phishing-N0va-Infra/" class="post-preview row g-0 flex-md-row-reverse">
+        
+
+        
+          
+
+          
+
+          
+
+          
+
+          <div class="col-md-5">
+            <div class="preview-img  shimmer"><img src="/assets/img/posts/n0va/senuelo-microsoft.webp" alt="Señuelo de N0va que suplanta la verificación de cuenta de Microsoft"  loading="lazy"></div>
+          </div>
+
+          
+        
+
+        <div class="col-md-7">
+          <div class="card-body d-flex flex-column">
+            <h1 class="card-title my-2 mt-md-0">N0va: Hunting de la infraestructura de un phishing kit de device code en workers.dev y Linode</h1>
+
+            <div class="card-text content mt-0 mb-3">
+              <p>Pivotando desde un único dominio de workers.dev hasta unas 1.000 páginas de device code phishing en Cloudflare Workers, Pages y Linode Object Storage.</p>
+            </div>
+
+            <div class="post-meta flex-grow-1 d-flex align-items-end">
+              <div class="me-auto">
+                <!-- posted date -->
+                <i class="far fa-calendar fa-fw me-1"></i>
+                <!--
+  Date format snippet
+  See: ${JS_ROOT}/modules/components/locale-datetime.js
+-->
+
+
+
+
+<time
+  
+  data-ts="1794038400"
+  data-df="ll"
+  
+>
+  Nov  7, 2026
+</time>
+
+
+                <!-- categories -->
+                
+                  <i class="far fa-folder-open fa-fw me-1"></i>
+                  <span class="categories">
+                    
+                      Infraestructura,
+                      Phishing
+                  </span>
+                
+              </div>
+
+              
+            </div>
+            <!-- .post-meta -->
+          </div>
+          <!-- .card-body -->
+        </div>
+      </a>
+    </article>
+  
+</div>
+<!-- #post-list -->
+
+
+
+
+            
+          </main>
+
+          <!-- panel -->
+          <aside aria-label="Panel" id="panel-wrapper" class="col-xl-3 ps-2 text-muted">
+            <div class="access">
+              <!-- Get 5 last posted/updated posts -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <section id="access-lastmod">
+    <h2 class="panel-heading">Recently Updated</h2>
+    <ul class="content list-unstyled ps-0 pb-1 ms-1 mt-2">
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-RedGuard-C2-Redirector/">RedGuard: hunting de redirectores de C2 por su configuración por defecto</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-TraderTraitor-mkcert/">TraderTraitor: una CA de mkcert, tres operadores y el rastro hasta el robo de KelpDAO</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Mythic-C2/">Mythic C2: dos puertos, dos huellas por defecto</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Brute-Ratel-C4/">Brute Ratel C4: cazando servidores que responden «200 OK» a una página no encontrada</a>
+        </li>
+      
+        
+        
+        
+        <li class="text-truncate lh-lg">
+          <a href="/posts/Hunting-Cobalt-Strike-Redirectors/">Cobalt Strike: hunting de redirectores nginx a partir de una respuesta 302</a>
+        </li>
+      
+    </ul>
+  </section>
+  <!-- #access-lastmod -->
+
+
+              <!-- The trending tags list -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+
+
+  <section>
+    <h2 class="panel-heading">Trending Tags</h2>
+    <div class="d-flex flex-wrap mt-3 mb-1 me-3">
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a>
+      
+    </div>
+  </section>
+
+
+            </div>
+
+            
+          </aside>
+        </div>
+
+        <div class="row">
+          <!-- tail -->
+          <div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-md-4">
+            
+
+            <!-- The Footer -->
+
+<footer
+  aria-label="Site Info"
+  class="
+    d-flex flex-column justify-content-center text-muted
+    flex-lg-row justify-content-lg-between align-items-lg-center pb-lg-3
+  "
+>
+  <p>©
+    <time>2026</time>
+
+    
+      <a href="https://github.com/juliospau">admin</a>.
+    
+
+    
+      <span
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author."
+      >Some rights reserved.</span>
+    
+  </p>
+
+  <p>Using the <a
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="v7.6.0"
+        href="https://github.com/cotes2020/jekyll-theme-chirpy"
+        target="_blank"
+        rel="noopener"
+      >Chirpy</a> theme for <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>.
+  </p>
+</footer>
+
+          </div>
+        </div>
+
+        <!-- The Search results -->
+
+<div id="search-result-wrapper" class="d-flex justify-content-center d-none">
+  <div class="col-11 content">
+    <div id="search-hints">
+      <!-- The trending tags list -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+        
+        
+
+  
+    
+    
+    
+    
+      
+    
+  
+    
+    
+    
+    
+      
+        
+        
+
+
+
+  <section>
+    <h2 class="panel-heading">Trending Tags</h2>
+    <div class="d-flex flex-wrap mt-3 mb-1 me-3">
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/pivoting/">pivoting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/c2/">c2</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/http-fingerprinting/">http-fingerprinting</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/shodan/">shodan</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/tls/">tls</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/cobalt-strike/">cobalt-strike</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/nginx/">nginx</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/redirectores/">redirectores</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/binance/">binance</a>
+      
+        
+        <a class="post-tag btn btn-outline-primary" href="/tags/brute-ratel/">brute-ratel</a>
+      
+    </div>
+  </section>
+
+
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+      </div>
+
+      <aside aria-label="Scroll to Top">
+        <button id="back-to-top" type="button" class="btn btn-lg btn-box-shadow">
+          <i class="fas fa-angle-up"></i>
+        </button>
+      </aside>
+    </div>
+
+    <div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div>
+
+    
+      <aside
+  id="notification"
+  class="toast w-auto rounded-5 text-nowrap"
+  role="alert"
+  aria-live="assertive"
+  aria-atomic="true"
+  data-bs-animation="true"
+  data-bs-autohide="false"
+>
+  <div class="d-flex align-items-center">
+    <div class="toast-body ps-3">New content available</div>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm rounded-2 py-0"
+      aria-label="Update"
+    >Update</button>
+    <button
+      type="button"
+      class="btn-close mx-3 ms-2"
+      data-bs-dismiss="toast"
+      aria-label="Close"
+    ></button>
+  </div>
+</aside>
+
+    
+
+    <!-- Embedded scripts -->
+
+    
+
+    <!--
+  Jekyll Simple Search loader
+  See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+
+
+<script>
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    SimpleJekyllSearch({
+      searchInput: document.getElementById('search-input'),
+      resultsContainer: document.getElementById('search-results'),
+      json: '/assets/js/data/search.json',
+      searchResultTemplate: '  <article class="px-1 px-sm-2 px-lg-4 px-xl-0">    <header>      <h2><a href="{url}">{title}</a></h2>      <div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">        {categories}        {tags}      </div>    </header>    <p>{content}</p>  </article>',
+      noResultsText: '<p class="mt-5">Oops! No results found.</p>',
+      templateMiddleware: function(prop, value, template) {
+        if (prop === 'categories') {
+          if (value === '') {
+            return `${value}`;
+          } else {
+            return `<div class="me-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+          }
+        }
+
+        if (prop === 'tags') {
+          if (value === '') {
+            return `${value}`;
+          } else {
+            return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`;
+          }
+        }
+      }
+    });
+  });
+</script>
+
+  </body>
+</html>
+
